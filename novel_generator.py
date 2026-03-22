@@ -122,7 +122,7 @@ class NovelGenerator:
         """生成设定集文件"""
         outline_content = self.read_text("总纲.txt")
         self.generate_file("设定集.txt", [
-            {"role": "system", "content": "你是一个专业的小说设定集生成器，根据小说总纲写各种设定，比如世界、主角、配角、地点、事件、势力，这些都要有完善的背景和细节，以及每个事件都要标注发生时间"},
+            {"role": "system", "content": "你是一个专业的小说设定集生成器，根据小说总纲写各种设定，比如世界、主角、配角、地点、事件、势力，这些都要有完善的背景和细节，以及每个事件都要标注发生时间，配角也要有一定的人物深度"},
             {"role": "user", "content": f"《{self.book_name}》\n\n总纲：{outline_content}\n\n要求：{self.user_input}"}
         ])
 
