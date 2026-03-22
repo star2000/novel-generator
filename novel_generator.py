@@ -1,9 +1,12 @@
+from __future__ import annotations
 import argparse
 from pathlib import Path
-
-import ollama
+from typing import TYPE_CHECKING
 
 from ai_client import get_client
+
+if TYPE_CHECKING:
+    import ollama
 
 
 class NovelGenerator:
