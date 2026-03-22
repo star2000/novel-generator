@@ -20,7 +20,7 @@ def review_novel(novel_dir: Path):
     stream = chat(messages=[
         {'role': 'system', 'content': '你是一个资深的小说读者，根据用户输入的小说内容，对各方面做出评价和评分'},
         {'role': 'user', 'content': words+'\n\n请对小说的各方面做出评价和评分'},
-    ])
+    ], options={'num_ctx': 256*1024})
     print('='*80)
     print(f"《{novel_dir.name}》 共{part_num}部{chapter_num}章{len(words)}字 评价：")
     for chunk in stream:
