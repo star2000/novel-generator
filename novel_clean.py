@@ -21,9 +21,9 @@ def clean_novel(novel_dir: Path):
         chapters = list(part.glob('*/'))
         chapters.sort(key=lambda x: int(re.search(r'\d+', x.name)[0]))
         for chapter in chapters:
-            print(f"处理 「{part.name}」 「{chapter.name}」 ...")
             text = (chapter / '正文.txt')
             if text.exists():
+                print(f"处理 「{part.name}」 「{chapter.name}」 ...")
                 content = text.read_text(encoding='utf-8')
                 stream = chat(messages=[
                     {"role": "system", "content": "你是一个小说正文洗稿器，根据用户输入的小说正文，删除首尾可能存在的第几部第几章和本章完之类的与小说正文无关的内容，然后输出洗稿后的文本。"},
