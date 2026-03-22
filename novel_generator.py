@@ -62,7 +62,7 @@ class NovelGenerator:
                 print(chunk.message.content, end="", flush=True)
             print()
             check = self.generate(f'检查 {path_name}', [
-                {"role": "system", "content": "你是一个资深的小说读者，根据用户输入的小说内容，对各方面做出评价和评分（1-10分），只当所有方面的评分都达到9分时，才输出'合格'，否则输出“不合格”并指导修改"},
+                {"role": "system", "content": "你是一个资深的小说读者，根据用户输入的小说内容，对各方面做出评价和评分（1-10分），只当所有方面的评分都达到8分时，才输出'合格'，否则输出“不合格”并指导修改"},
                 {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n{path_name}：{content}"}
             ])
             if '不合格' in check:
