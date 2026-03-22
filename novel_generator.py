@@ -1,6 +1,7 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
+import re
 from typing import TYPE_CHECKING
 
 from ai_client import get_client
@@ -166,6 +167,19 @@ class NovelGenerator:
         ])
         return f"第{chapter_num}章-{chapter_name}"
     
+    def get_prev_chapter_dir(self, part_name:str,chapter_name:str) -> Path | None:
+        """获取前一章的目录"""
+        part_num = int(re.search(r'\d+', part_name)[0])
+        chapter_num = int(re.search(r'\d+', chapter_name)[0])
+        if chapter_num == 1:
+            if part_num == 1:
+                return None
+            # 找上一部的最后一章
+            prev_part_dir = next(self.book_output_dir.glob(f'第{part_num - 1}部-*/'))
+            prev_chapters = list((self.book_output_dir / prev_part_dir.name).glob('*/'))
+            return max(prev_chapters, key=lambda x: int(re.search(r'\d+', x.name)[0]))
+        return next((self.book_output_dir / part_name).glob(f"第{chapter_num-1}章-*/"))
+
     def generate_chapter_outline(self, part_name: str, chapter_name: str):
         """生成章节大纲文件"""
         path_name = f"{part_name}/{chapter_name}/大纲.txt"
@@ -173,9 +187,13 @@ class NovelGenerator:
             return
         settings_content = self.read_text("设定集.txt")
         part_outline_content = self.read_text(f"{part_name}/大纲.txt")
+        prev_content = ''
+        if prev_chapter_dir := self.get_prev_chapter_dir(part_name, chapter_name):
+            if prev_chapter_outline_content := self.read_text(prev_chapter_dir / '大纲.txt'):
+                prev_content += f"\n\n前一章大纲：{prev_chapter_outline_content}"
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说章节大纲生成器，根据设定集、部大纲生成该章节的大纲，包括主要事件、剧情伏笔、角色发展、环境变化等。"},
-            {"role": "user", "content": f"根据以下设定集、部大纲，为小说《{self.book_name}》的{part_name}的{chapter_name}生成大纲。\n\n设定集：{settings_content}\n\n部大纲：{part_outline_content}"}
+            {"role": "user", "content": f"根据以下设定集、部大纲，为小说《{self.book_name}》的{part_name}的{chapter_name}生成大纲。\n\n设定集：{settings_content}{prev_content}\n\n部大纲：{part_outline_content}"}
         ])
     
     def generate_chapter_content(self, part_name: str, chapter_name: str):
@@ -185,9 +203,13 @@ class NovelGenerator:
             return
         settings_content = self.read_text("设定集.txt")
         chapter_outline_content = self.read_text(f"{part_name}/{chapter_name}/大纲.txt")
+        prev_content = ''
+        if prev_chapter_dir := self.get_prev_chapter_dir(part_name, chapter_name):
+            if prev_chapter_content := self.read_text(prev_chapter_dir / '正文.txt'):
+                prev_content += f"\n\n前一章正文：{prev_chapter_content}"
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。"},
-            {"role": "user", "content": f"设定集：{settings_content}\n\n章节大纲：{chapter_outline_content}"}
+            {"role": "user", "content": f"设定集：{settings_content}{prev_content}\n\n章节大纲：{chapter_outline_content}"}
         ])
 
     def run(self):
