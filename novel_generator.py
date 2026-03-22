@@ -50,7 +50,7 @@ class NovelGenerator:
             'content':f"请只用中文生成 {path_name} 的内容"
         }]
         path.parent.mkdir(parents=True, exist_ok=True)
-        settings_content = self.read_text("设定集.txt") or self.user_input
+        settings_content = self.read_text("设定集.txt")+'\n\n'+self.user_input
         fix_messages:list[ollama.Message] = []
         while True:
             stream = self.client(messages=messages+fix_messages+output_messages)
