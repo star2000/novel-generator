@@ -41,7 +41,7 @@ class NovelGenerator:
             return
         output_messages = [{
             'role':'user',
-            'content':f"请生成 {path_name} 的内容，纯文本格式，不包含文件名，只用中文"
+            'content':f"请只用中文生成 {path_name} 的内容"
         }]
         path.parent.mkdir(parents=True, exist_ok=True)
         settings_content = self.read_text("设定集.txt")
@@ -70,6 +70,12 @@ class NovelGenerator:
                         'content':f"{check}\n\n请重新生成"
                     }]
                     continue
+            # 对正文，用ai洗稿，删除首尾可能存在的第几部第几章和本章完之类的与小说正文无关的内容
+            if '正文.' in path_name:
+                content = self.generate(f'洗稿 {path_name}', [
+                    {"role": "system", "content": "你是一个小说正文洗稿器，根据用户输入的小说正文，删除首尾可能存在的第几部第几章和本章完之类的与小说正文无关的内容，然后输出洗稿后的文本。"},
+                    {"role": "user", "content": content}
+                ])
             break
         path.write_text(content, encoding="utf-8")
         print(f"{path_name} 生成完成")
