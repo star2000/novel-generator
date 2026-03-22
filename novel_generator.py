@@ -132,7 +132,7 @@ class NovelGenerator:
         outline_content = self.read_text("总纲.txt")
         part_name = self.generate(f'生成第{part_num}部-部名', [
             {"role": "system", "content": "你是一个专业的小说部名生成器，根据总纲生成该部的名称。仅输出部名，不包含任何额外的内容和符号。"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{outline_content}\n\n为第{part_num}部生成名称，仅输出部名，不包含部号，不包含第几部："}
+            {"role": "user", "content": f"《{self.book_name}》\n\n{outline_content}\n\n为第{part_num}部生成名称，仅输出部名，不包含部号，不包含第几部："}
         ])
         return f"第{part_num}部-{part_name}"
  
@@ -145,7 +145,7 @@ class NovelGenerator:
         outline_content = self.read_text("总纲.txt")
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说部大纲生成器，根据总纲、设定集生成该部的大纲，包括有多少章以及每一章的大致内容，包括主要事件、剧情伏笔、角色发展、环境变化等。"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n{outline_content}"}
+            {"role": "user", "content": f"《{self.book_name}》\n\n{settings_content}\n\n{outline_content}"}
         ])
 
     def generate_total_chapter_num(self, part_name: str) -> int:
@@ -163,7 +163,7 @@ class NovelGenerator:
         part_outline_content = self.read_text(f"{part_name}/大纲.txt")
         chapter_name = self.generate(f'生成第{chapter_num}章-章节名', [
             {"role": "system", "content": "你是一个专业的小说章节名生成器，根据部大纲生成该章节的名称。仅输出章节名，不包含章节号和部号，不包含第几章，不包含任何额外的内容和符号。"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{part_outline_content}\n\n为{part_name}的第{chapter_num}章生成名称，仅输出章节名，不包含章节号和部号，不包含第几章："}
+            {"role": "user", "content": f"《{self.book_name}》\n\n{part_outline_content}\n\n为{part_name}的第{chapter_num}章生成名称，仅输出章节名，不包含章节号和部号，不包含第几章："}
         ])
         return f"第{chapter_num}章-{chapter_name}"
     
@@ -193,7 +193,7 @@ class NovelGenerator:
                 prev_content += f"\n\n{prev_chapter_outline_content}"
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说章节大纲生成器，主要事件、剧情伏笔、角色发展、环境变化等，以及配角要有一定的人物深度"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n{prev_content}\n\n{part_outline_content}"}
+            {"role": "user", "content": f"《{self.book_name}》\n\n{settings_content}\n\n{prev_content}\n\n{part_outline_content}"}
         ])
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
@@ -209,7 +209,7 @@ class NovelGenerator:
                 prev_content += f"\n\n{prev_chapter_content}"
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n{prev_content}\n\n{chapter_outline_content}"}
+            {"role": "user", "content": f"《{self.book_name}》\n\n{settings_content}\n\n{prev_content}\n\n{chapter_outline_content}"}
         ])
 
     def run(self):
