@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
 
+import ollama
+
 from ai_client import get_client
 
 
