@@ -1,3 +1,4 @@
+import re
 import argparse
 from pathlib import Path
 
@@ -7,10 +8,14 @@ def review_novel(novel_dir: Path):
     part_num = 0
     chapter_num = 0
     word_list = [f'《{novel_dir.name}》']
-    for part in novel_dir.glob('*/'):
+    parts = list(novel_dir.glob('*/'))
+    parts.sort(key=lambda x: int(re.search(r'\d+', x.name)[0]))
+    for part in parts:
         part_num += 1
         word_list.append(part.name)
-        for chapter in part.glob('*/'):
+        chapters = list(part.glob('*/'))
+        chapters.sort(key=lambda x: int(re.search(r'\d+', x.name)[0]))
+        for chapter in chapters:
             text = (chapter / '正文.txt')
             if text.exists():
                 chapter_num += 1
