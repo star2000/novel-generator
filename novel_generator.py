@@ -223,7 +223,7 @@ class NovelGenerator:
 
         self.setup_book_output_dir()
 
-        if self.user_input is not None:
+        if self.user_input is None:
             (self.book_output_dir / "要求.txt").write_text(self.user_input, encoding="utf-8")
 
         # 3. 生成总纲和设定集
