@@ -223,8 +223,10 @@ class NovelGenerator:
 
         self.setup_book_output_dir()
 
-        if self.user_input is None:
+        if self.user_input is not None:
             (self.book_output_dir / "要求.txt").write_text(self.user_input, encoding="utf-8")
+        else:
+            self.user_input = self.read_text("要求.txt")
 
         # 3. 生成总纲和设定集
         self.generate_outline()
