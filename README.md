@@ -75,6 +75,27 @@ python novel_review.py --model "qw" --book-name "剑影江湖" --output-dir "./d
 - `--book-name, -n`：小说书名，如不提供则评价输出目录下所有小说
 - `--output-dir, -o`：输出目录路径，默认为"./dist/"
 
+### 洗稿器
+
+洗稿器用于处理生成的小说正文，删除首尾可能存在的"第几部第几章"和"本章完"之类的与小说正文无关的内容。
+
+```bash
+# 无参数，处理输出目录下所有小说
+python novel_clean.py
+
+# 仅指定小说书名，处理该小说
+python novel_clean.py --book-name "剑影江湖"
+
+# 全参数自定义
+python novel_clean.py --model "qw" --book-name "剑影江湖" --output-dir "./dist/"
+```
+
+**参数说明：**
+
+- `--model, -m`：模型名称，默认为"qw"
+- `--book-name, -n`：小说书名，如不提供则处理输出目录下所有小说
+- `--output-dir, -o`：输出目录路径，默认为"./dist/"
+
 
 ## 源码结构
 
@@ -82,6 +103,7 @@ python novel_review.py --model "qw" --book-name "剑影江湖" --output-dir "./d
 ├── ai_client.py         # AI客户端实现，使用ollama
 ├── novel_generator.py   # 小说生成核心逻辑
 ├── novel_review.py      # 小说评价功能
+├── novel_clean.py       # 小说正文洗稿器
 ├── pyproject.toml       # 项目配置和依赖管理
 ├── qw.Modelfile         # 模型配置文件
 └── uv.lock              # 依赖锁定文件
@@ -101,6 +123,11 @@ python novel_review.py --model "qw" --book-name "剑影江湖" --output-dir "./d
 3. **novel_review.py**：
    - 实现小说评价功能
    - 分析小说内容并生成评价
+
+4. **novel_clean.py**：
+   - 实现小说正文洗稿功能
+   - 删除首尾可能存在的与小说正文无关的内容
+   - 支持批量处理多个小说
 
 ## 产物结构
 

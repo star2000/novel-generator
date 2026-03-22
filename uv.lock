@@ -33,6 +33,15 @@ wheels = [
 ]
 
 [[package]]
+name = "diff-match-patch"
+version = "20241021"
+source = { registry = "https://mirrors.aliyun.com/pypi/simple" }
+sdist = { url = "https://mirrors.aliyun.com/pypi/packages/0e/ad/32e1777dd57d8e85fa31e3a243af66c538245b8d64b7265bec9a61f2ca33/diff_match_patch-20241021.tar.gz", hash = "sha256:beae57a99fa48084532935ee2968b8661db861862ec82c6f21f4acdd6d835073" }
+wheels = [
+    { url = "https://mirrors.aliyun.com/pypi/packages/f7/bb/2aa9b46a01197398b901e458974c20ed107935c26e44e37ad5b0e5511e44/diff_match_patch-20241021-py3-none-any.whl", hash = "sha256:93cea333fb8b2bc0d181b0de5e16df50dd344ce64828226bda07728818936782" },
+]
+
+[[package]]
 name = "h11"
 version = "0.16.0"
 source = { registry = "https://mirrors.aliyun.com/pypi/simple" }
@@ -83,11 +92,15 @@ name = "novel-generator"
 version = "0.0.1"
 source = { virtual = "." }
 dependencies = [
+    { name = "diff-match-patch" },
     { name = "ollama" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "ollama", specifier = ">=0.6.1" }]
+requires-dist = [
+    { name = "diff-match-patch", specifier = ">=20241021" },
+    { name = "ollama", specifier = ">=0.6.1" },
+]
 
 [[package]]
 name = "ollama"
