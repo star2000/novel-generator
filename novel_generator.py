@@ -68,10 +68,10 @@ class NovelGenerator:
                     {"role": "user", "content": content}
                 ])
             check = self.generate(f'检查 {path_name}', [
-                {"role": "system", "content": "你是一个资深的小说审稿人，根据设定集，对用户的输入文本的各方面做出评价和评分（1-10分），并提出优化建议，如无建议输出'完美'"},
+                {"role": "system", "content": "你是一个资深的小说审稿人，根据设定集，对用户的输入文本的各方面做出评价和评分（1-10分），并提出优化建议，如无建议输出'无需优化'"},
                 {"role": "user", "content": f"{settings_content}\n\n{path_name}：{content}"}
             ])
-            if '完美' not in check:
+            if '无需优化' not in check:
                 print(f"{path_name} 检查发现还不完美，重新生成")
                 fix_messages=[{
                     'role':'assistant',
