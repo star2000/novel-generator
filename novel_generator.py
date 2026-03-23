@@ -25,7 +25,7 @@ class NovelGenerator:
         """读取文件内容"""
         if not self.exists(path_name):
             return ''
-        return f'{path_name}：'+(self.book_output_dir / path_name).read_text(encoding="utf-8")
+        return f'<{path_name}>\n'+(self.book_output_dir / path_name).read_text(encoding="utf-8") + f'\n</{path_name}>'
 
     def generate(self, name: str, messages: list[ollama.Message]):
         '''生成内容'''
