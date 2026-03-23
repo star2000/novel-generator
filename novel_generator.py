@@ -62,8 +62,8 @@ class NovelGenerator:
                 print(chunk.message.content, end="", flush=True)
             print()
             check = self.generate(f'检查 {path_name}', [
-                {"role": "system", "content": "你是一个资深的小说读者，根据用户输入的小说内容，对各方面做出评价和评分（1-10分），只当所有方面的评分都达到8分时，才输出'合格'，否则输出“不合格”并指导修改"},
-                {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n{path_name}：{content}"}
+                {"role": "system", "content": "你是一个资深的小说审稿人，根据设定集，对用户的输入文本的各方面做出评价和评分（1-10分），当评分小于8分时输出'不合格'"},
+                {"role": "user", "content": f"{settings_content}\n\n{path_name}：{content}"}
             ])
             if '不合格' in check:
                 print(f"{path_name} 检查不合格，需要重新生成")
@@ -121,7 +121,7 @@ class NovelGenerator:
         """生成设定集文件"""
         outline_content = self.read_text("总纲.txt")
         self.generate_file("设定集.txt", [
-            {"role": "system", "content": "你是一个专业的小说设定集生成器，根据小说总纲写各种设定，比如世界、主角、配角、地点、事件、势力，这些都要有完善的背景和细节，以及每个事件都要标注发生时间，配角也要有一定的人物深度"},
+            {"role": "system", "content": "你是一个专业的小说设定集生成器，根据小说总纲写各种设定，比如世界背景、主角（至少13个）、配角（至少26个）、地点、事件、势力，这些都要有完善的背景和细节，以及每个事件都要标注发生时间，主角和配角都要有足够的人物深度"},
             {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{outline_content}"}
         ])
 
@@ -132,7 +132,7 @@ class NovelGenerator:
         outline_content = self.read_text("总纲.txt")
         part_name = self.generate(f'生成第{part_num}部-部名', [
             {"role": "system", "content": "你是一个专业的小说部名生成器，根据总纲生成该部的名称。仅输出部名，不包含任何额外的内容和符号。"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n{outline_content}\n\n为第{part_num}部生成名称，仅输出部名，不包含部号，不包含第几部："}
+            {"role": "user", "content": f"{outline_content}\n\n为第{part_num}部生成名称，仅输出部名，不包含部号，不包含第几部："}
         ])
         return f"第{part_num}部-{part_name}"
  
@@ -144,8 +144,8 @@ class NovelGenerator:
         settings_content = self.read_text("设定集.txt")
         outline_content = self.read_text("总纲.txt")
         self.generate_file(path_name, [
-            {"role": "system", "content": "你是一个专业的小说部大纲生成器，根据总纲、设定集生成该部的大纲，包括有多少章以及每一章的大致内容，包括主要事件、剧情伏笔、角色发展、环境变化等。"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n{settings_content}\n\n{outline_content}"}
+            {"role": "system", "content": "你是一个专业的小说部大纲生成器，根据设定集和总纲生成该部的大纲，包括有多少章以及每一章的大致内容，包括主要事件、剧情伏笔、角色发展、环境变化等。"},
+            {"role": "user", "content": f"{settings_content}\n\n{outline_content}"}
         ])
 
     def generate_total_chapter_num(self, part_name: str) -> int:
@@ -163,7 +163,7 @@ class NovelGenerator:
         part_outline_content = self.read_text(f"{part_name}/大纲.txt")
         chapter_name = self.generate(f'生成第{chapter_num}章-章节名', [
             {"role": "system", "content": "你是一个专业的小说章节名生成器，根据部大纲生成该章节的名称。仅输出章节名，不包含章节号和部号，不包含第几章，不包含任何额外的内容和符号。"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n{part_outline_content}\n\n为{part_name}的第{chapter_num}章生成名称，仅输出章节名，不包含章节号和部号，不包含第几章："}
+            {"role": "user", "content": f"{part_outline_content}\n\n为{part_name}的第{chapter_num}章生成名称，仅输出章节名，不包含章节号和部号，不包含第几章："}
         ])
         return f"第{chapter_num}章-{chapter_name}"
     
@@ -193,7 +193,7 @@ class NovelGenerator:
                 prev_content += f"\n\n{prev_chapter_outline_content}"
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说章节大纲生成器，主要事件、剧情伏笔、角色发展、环境变化等，以及配角要有一定的人物深度"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n{settings_content}\n\n{prev_content}\n\n{part_outline_content}"}
+            {"role": "user", "content": f"{settings_content}\n\n{prev_content}\n\n{part_outline_content}"}
         ])
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
@@ -209,7 +209,7 @@ class NovelGenerator:
                 prev_content += f"\n\n{prev_chapter_content}"
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n{settings_content}\n\n{prev_content}\n\n{chapter_outline_content}"}
+            {"role": "user", "content": f"{settings_content}\n\n{prev_content}\n\n{chapter_outline_content}"}
         ])
 
     def run(self):
