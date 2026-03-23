@@ -61,12 +61,18 @@ class NovelGenerator:
                 content += chunk.message.content
                 print(chunk.message.content, end="", flush=True)
             print()
+            # 对正文，用ai洗稿，删除首尾可能存在的第几部第几章和本章完之类的与小说正文无关的内容
+            if '正文.' in path_name:
+                content = self.generate(f'洗稿 {path_name}', [
+                    {"role": "system", "content": "你是一个小说正文洗稿器，根据用户输入的小说正文，删除首尾可能存在的第几部第几章和本章完之类的与小说正文无关的内容，然后输出洗稿后的文本。"},
+                    {"role": "user", "content": content}
+                ])
             check = self.generate(f'检查 {path_name}', [
-                {"role": "system", "content": "你是一个资深的小说审稿人，根据设定集，对用户的输入文本的各方面做出评价和评分（1-10分），当评分小于8分时输出'不合格'"},
+                {"role": "system", "content": "你是一个资深的小说审稿人，根据设定集，对用户的输入文本的各方面做出评价和评分（1-10分），并提出优化建议，如无建议输出'完美'"},
                 {"role": "user", "content": f"{settings_content}\n\n{path_name}：{content}"}
             ])
-            if '不合格' in check:
-                print(f"{path_name} 检查不合格，需要重新生成")
+            if '完美' not in check:
+                print(f"{path_name} 检查发现还不完美，重新生成")
                 fix_messages=[{
                     'role':'assistant',
                     'content':content
@@ -75,12 +81,6 @@ class NovelGenerator:
                     'content':f"{check}\n\n请重新生成"
                 }]
                 continue
-            # 对正文，用ai洗稿，删除首尾可能存在的第几部第几章和本章完之类的与小说正文无关的内容
-            if '正文.' in path_name:
-                content = self.generate(f'洗稿 {path_name}', [
-                    {"role": "system", "content": "你是一个小说正文洗稿器，根据用户输入的小说正文，删除首尾可能存在的第几部第几章和本章完之类的与小说正文无关的内容，然后输出洗稿后的文本。"},
-                    {"role": "user", "content": content}
-                ])
             break
         path.write_text(content, encoding="utf-8")
         print(f"{path_name} 生成完成")
