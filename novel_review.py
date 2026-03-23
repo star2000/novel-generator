@@ -1,6 +1,7 @@
-import re
 import argparse
+import math
 from pathlib import Path
+import re
 
 from ai_client import get_client
 
@@ -22,12 +23,14 @@ def review_novel(novel_dir: Path):
                 word_list.append(chapter.name)
                 word_list.append(text.read_text(encoding='utf-8'))
     words = '\n'.join(word_list)
+    word_num = len(words)
+    num_ctx = 2**max(12, min(18, math.ceil(math.log2(word_num))))
     stream = chat(messages=[
         {'role': 'system', 'content': '你是一个资深的小说读者，根据用户输入的小说内容，对各方面做出评价和评分'},
         {'role': 'user', 'content': words+'\n\n请对小说的各方面做出评价和评分'},
-    ], options={'num_ctx': 256*1024})
+    ], options={'num_ctx': num_ctx})
     print('='*80)
-    print(f"《{novel_dir.name}》 共{part_num}部{chapter_num}章{len(words)}字 评价：")
+    print(f"《{novel_dir.name}》 共{part_num}部{chapter_num}章{word_num}字 评价：")
     for chunk in stream:
         print(chunk.message.content, end='', flush=True)
     print()

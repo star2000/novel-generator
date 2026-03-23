@@ -203,13 +203,9 @@ class NovelGenerator:
             return
         settings_content = self.read_text("设定集.txt")
         chapter_outline_content = self.read_text(f"{part_name}/{chapter_name}/大纲.txt")
-        prev_content = ''
-        if prev_chapter_dir := self.get_prev_chapter_dir(part_name, chapter_name):
-            if prev_chapter_content := self.read_text(prev_chapter_dir / '正文.txt'):
-                prev_content += f"\n\n{prev_chapter_content}"
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。叙事要顺畅，角色要有深度，情节要有张力"},
-            {"role": "user", "content": f"{settings_content}\n\n{prev_content}\n\n{chapter_outline_content}"}
+            {"role": "user", "content": f"{settings_content}\n\n{chapter_outline_content}"}
         ])
 
     def run(self):
