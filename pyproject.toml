@@ -1,8 +1,9 @@
 [project]
 authors = [{name = "star2000", email = "i@star2000.work"}]
 name = "novel-generator"
-requires-python = "~=3.13.0"
 version = "0.0.1"
+description = "高质量长篇小说生成器"
+requires-python = ">=3.13"
 dependencies = [
     "diff-match-patch>=20241021",
     "ollama>=0.6.1",

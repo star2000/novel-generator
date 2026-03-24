@@ -10,18 +10,24 @@
 - 为每个章节生成大纲和正文
 - 支持对生成的小说进行评价
 
+## 注意事项
+
+默认模型使用qwen3.5:9b，32k上下文长度，需要8GB显存才能本地高速运行，如果显存不足，换成`qwen3.5:4b`或更小的模型
+
 
 ## 环境安装步骤
 
-1. [安装uv包管理器](https://docs.astral.sh/uv/getting-started/installation/)
-2. 克隆项目到本地
-3. 进入项目目录
-4. 安装项目依赖：
-   ```bash
-   uv sync
+1. [安装uv包管理器](https://docs.astral.sh/uv/getting-started/installation/) 和 [Ollama 本地ai启动器](https://ollama.com/download)
+2. 克隆项目到本地：
+   ```sh
+   git clone https://github.com/star2000/novel-generator.git
    ```
-5. Ollama创建qw模型：
-   ```bash
+3. 进入项目目录：
+   ```sh
+   cd novel-generator
+   ```
+4. 下载模型调参待用：
+   ```sh
    ollama create qw -f qw.Modelfile
    ```
 
@@ -29,9 +35,10 @@
 
 ### 生成小说
 
-```bash
-python novel_generator.py --model <模型名称> --user-input <小说要求> --book-name <小说书名> --output-dir <输出目录>
-```
+**novel_generator.py**：
+- 核心的小说生成逻辑
+- 实现了从用户输入到完整小说的生成流程
+- 包括书名生成、总纲生成、设定集生成、部和章节的生成
 
 **参数说明：**
 
@@ -42,32 +49,26 @@ python novel_generator.py --model <模型名称> --user-input <小说要求> --b
 
 **示例：**
 
-```bash
+```sh
 # 无参数，询问用户输入要求
-python novel_generator.py
+uv run novel_generator.py
 
 # 仅输入要求，参数传递版
-python novel_generator.py --user-input "一部关于未来世界的科幻小说，主角是一名人工智能科学家"
+uv run novel_generator.py --user-input "一部关于未来世界的科幻小说，主角是一名人工智能科学家"
 
 # 仅书名，用于中断后继续生成
-python novel_generator.py --book-name "剑影江湖"
+uv run novel_generator.py --book-name "剑影江湖"
 
-# 指定书名和输出目录
-python novel_generator.py --user-input "一部关于古代武侠的小说，主角是一名年轻的剑客" --book-name "剑影江湖" --output-dir "./dist/"
+# 全参数自定义
+uv run novel_generator.py --model "qw" --user-input "一部关于未来世界的科幻小说，主角是一名人工智能科学家" --book-name "剑影江湖" --output-dir "./dist/"
 ```
 
 ### 评价小说
 
-```bash
-# 无参数，评价已生成的所有小说
-python novel_review.py
+**novel_review.py**：
+- 实现小说评价功能
+- 分析小说内容并生成评价
 
-# 仅指定小说书名，评价该小说
-python novel_review.py --book-name "剑影江湖"
-
-# 全参数自定义
-python novel_review.py --model "qw" --book-name "剑影江湖" --output-dir "./dist/"
-```
 
 **参数说明：**
 
@@ -75,20 +76,25 @@ python novel_review.py --model "qw" --book-name "剑影江湖" --output-dir "./d
 - `--book-name, -n`：小说书名，如不提供则评价输出目录下所有小说
 - `--output-dir, -o`：输出目录路径，默认为"./dist/"
 
-### 洗稿器
+**示例：**
 
-洗稿器用于处理生成的小说正文，删除首尾可能存在的"第几部第几章"和"本章完"之类的与小说正文无关的内容。
+```sh
+# 无参数，评价已生成的所有小说
+uv run novel_review.py
 
-```bash
-# 无参数，处理输出目录下所有小说
-python novel_clean.py
-
-# 仅指定小说书名，处理该小说
-python novel_clean.py --book-name "剑影江湖"
+# 仅指定小说书名，评价该小说
+uv run novel_review.py --book-name "剑影江湖"
 
 # 全参数自定义
-python novel_clean.py --model "qw" --book-name "剑影江湖" --output-dir "./dist/"
+uv run novel_review.py --model "qw" --book-name "剑影江湖" --output-dir "./dist/"
 ```
+
+### 洗稿器
+
+**novel_clean.py**：
+- 实现小说正文洗稿功能
+- 删除首尾可能存在的"第几部第几章"和"本章完"之类与小说正文无关的内容
+- 支持批量处理多个小说
 
 **参数说明：**
 
@@ -96,38 +102,30 @@ python novel_clean.py --model "qw" --book-name "剑影江湖" --output-dir "./di
 - `--book-name, -n`：小说书名，如不提供则处理输出目录下所有小说
 - `--output-dir, -o`：输出目录路径，默认为"./dist/"
 
+**示例：**
 
-## 源码结构
+```sh
+# 无参数，处理输出目录下所有小说
+uv run novel_clean.py
 
+# 仅指定小说书名，处理该小说
+uv run novel_clean.py --book-name "剑影江湖"
+
+# 全参数自定义
+uv run novel_clean.py --model "qw" --book-name "剑影江湖" --output-dir "./dist/"
 ```
-├── ai_client.py         # AI客户端实现，使用ollama
-├── novel_generator.py   # 小说生成核心逻辑
-├── novel_review.py      # 小说评价功能
-├── novel_clean.py       # 小说正文洗稿器
-├── pyproject.toml       # 项目配置和依赖管理
-├── qw.Modelfile         # 模型配置文件
-└── uv.lock              # 依赖锁定文件
-```
 
-### 主要模块说明
 
-1. **ai_client.py**：
-   - 提供AI客户端的初始化和配置
-   - 使用ollama库与AI模型进行交互
+## 工作流程
 
-2. **novel_generator.py**：
-   - 核心的小说生成逻辑
-   - 实现了从用户输入到完整小说的生成流程
-   - 包括书名生成、总纲生成、设定集生成、部和章节的生成
-
-3. **novel_review.py**：
-   - 实现小说评价功能
-   - 分析小说内容并生成评价
-
-4. **novel_clean.py**：
-   - 实现小说正文洗稿功能
-   - 删除首尾可能存在的与小说正文无关的内容
-   - 支持批量处理多个小说
+1. **输入处理**：获取用户输入的小说要求
+2. **书名生成**：根据用户要求生成合适的书名
+3. **总纲生成**：生成小说的总纲，包括分部情况
+4. **设定集生成**：生成小说的详细设定，包括世界背景、角色、地点等
+5. **分部处理**：根据总纲生成各部的大纲
+6. **章节处理**：为每部生成章节大纲和正文
+7. **内容检查**：检查生成的内容是否符合设定和逻辑
+8. **输出保存**：将生成的内容保存到指定目录
 
 ## 产物结构
 
@@ -151,49 +149,6 @@ python novel_clean.py --model "qw" --book-name "剑影江湖" --output-dir "./di
     ├── 第2部-<部名>/
     │   ├── 大纲.txt
     │   ├── 第1章-<章节名>/
-    │   │   ├── 大纲.txt
-    │   │   └── 正文.txt
-    │   └── ...
-    └── ...
-```
-
-## 工作流程
-
-1. **输入处理**：获取用户输入的小说要求
-2. **书名生成**：根据用户要求生成合适的书名
-3. **总纲生成**：生成小说的总纲，包括分部情况
-4. **设定集生成**：生成小说的详细设定，包括世界背景、角色、地点等
-5. **分部处理**：根据总纲生成各部的大纲
-6. **章节处理**：为每部生成章节大纲和正文
-7. **内容检查**：检查生成的内容是否符合设定和逻辑
-8. **输出保存**：将生成的内容保存到指定目录
-
-## 注意事项
-
-1. 确保已安装并启动Ollama服务
-2. 确保已下载指定的模型（默认需要"qw"模型）
-3. 生成过程可能需要较长时间，取决于模型性能和网络速度
-4. 生成的内容可能需要人工修改和润色
-
-## 示例输出
-
-执行以下命令：
-
-```bash
-python novel_generator.py --user-input "一部关于未来世界的科幻小说，主角是一名人工智能科学家" --book-name "数字觉醒"
-```
-
-会生成类似以下结构的内容：
-
-```
-dist/
-└── 数字觉醒/
-    ├── 要求.txt
-    ├── 总纲.txt
-    ├── 设定集.txt
-    ├── 第1部-觉醒/
-    │   ├── 大纲.txt
-    │   ├── 第1章-实验室意外/
     │   │   ├── 大纲.txt
     │   │   └── 正文.txt
     │   └── ...
