@@ -23,7 +23,7 @@ def markdown_to_text(markdown_string: str) -> str:
     return text.strip()
 
 def clean_novel(model: str, novel_dir: Path):
-    chat = get_client(model, stream=False)
+    chat = get_client(model)
 
     parts = list(novel_dir.glob('*/'))
     parts.sort(key=lambda x: int(re.search(r'\d+', x.name)[0]))
@@ -35,14 +35,17 @@ def clean_novel(model: str, novel_dir: Path):
             if text.exists():
                 print(f"处理 「{part.name}」 「{chapter.name}」 ...")
                 content = text.read_text(encoding='utf-8')
-                response = chat(messages=[
-                    {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现现在是第几章第几部，在结尾明说本章完会破坏读者体验，其余部分保持原样"},
+                stream = chat(messages=[
+                    {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该出现本章完，其余部分保持原样"},
                     {"role": "user", "content": content}
                 ])
-                diff_text = diff(content, response.message.content)
+                new_content = ''
+                for chunk in stream:
+                    new_content += chunk.message.content
+                diff_text = diff(content, new_content)
                 (chapter/ '差异.txt').write_text(diff_text, encoding='utf-8')
                 print(diff_text)
-                new_content = markdown_to_text(response.message.content or content)
+                new_content = markdown_to_text(new_content)
                 (chapter/ '正文.txt').write_text(new_content, encoding='utf-8')
 
 
