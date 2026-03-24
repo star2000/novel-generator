@@ -17,7 +17,7 @@ def review_novel(novel_dir: Path):
         chapters = list(part.glob('*/'))
         chapters.sort(key=lambda x: int(re.search(r'\d+', x.name)[0]))
         for chapter in chapters:
-            text = (chapter / '正文.md')
+            text = (chapter / '正文.txt')
             if text.exists():
                 chapter_num += 1
                 word_list.append(chapter.name)
