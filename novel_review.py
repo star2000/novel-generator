@@ -3,7 +3,7 @@ import math
 from pathlib import Path
 import re
 
-from ai_client import get_client
+from utils import get_client
 
 def review_novel(novel_dir: Path):
     part_num = 0

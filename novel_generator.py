@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 from typing import TYPE_CHECKING
 
-from ai_client import get_client
+import utils as u
 
 if TYPE_CHECKING:
     import ollama
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 class NovelGenerator:
     def __init__(self, model:str, output_dir:str, user_input:str|None=None, book_name:str|None=None):
-        self.client = get_client(model)
+        self.client = u.get_client(model)
         self.output_dir = Path(output_dir)
         self.user_input = user_input
         self.book_name = book_name
@@ -194,14 +194,35 @@ class NovelGenerator:
     def generate_chapter_content(self, part_name: str, chapter_name: str):
         """生成章节正文文件"""
         path_name = f"{part_name}/{chapter_name}/正文.md"
-        if self.exists(path_name):
-            return
-        settings_content = self.read_text("设定集.md")
-        chapter_outline_content = self.read_text(f"{part_name}/{chapter_name}/大纲.md")
-        self.generate_file(path_name, [
-            {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。叙事要顺畅，角色要有深度，情节要有张力"},
-            {"role": "user", "content": f"{settings_content}\n\n{chapter_outline_content}"}
-        ])
+        if not self.exists(path_name):
+            settings_content = self.read_text("设定集.md")
+            chapter_outline_content = self.read_text(f"{part_name}/{chapter_name}/大纲.md")
+            self.generate_file(path_name, [
+                {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。叙事要顺畅，角色要有深度，情节要有张力"},
+                {"role": "user", "content": f"{settings_content}\n\n{chapter_outline_content}"}
+            ])
+        cleaned_path = self.book_output_dir / path_name.replace('.md', '.txt')
+        if not cleaned_path.exists():
+            content = (self.book_output_dir / path_name).read_text(encoding="utf-8")
+            stream = self.client(messages=[
+                {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该明说本章完，其余必须保持原样"},
+                {"role": "user", "content": content}
+            ])
+            new_content = ''
+            print(f'洗稿 {path_name}')
+            for chunk in stream:
+                new_content += chunk.message.content
+                print(chunk.message.content, end='', flush=True)
+            print()
+            new_content = u.markdown_to_text(new_content)
+            cleaned_path.write_text(new_content, encoding="utf-8")
+        diff_path = self.book_output_dir / path_name.replace('.md', '.diff')
+        if not diff_path.exists():
+            content = (self.book_output_dir / path_name).read_text(encoding="utf-8")
+            raw_content = u.markdown_to_text(content)
+            cleaned_content = cleaned_path.read_text(encoding="utf-8")
+            diff_text = u.diff(raw_content, cleaned_content)
+            diff_path.write_text(diff_text, encoding="utf-8")
 
     def run(self):
         """运行小说生成流程"""

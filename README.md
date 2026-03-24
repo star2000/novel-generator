@@ -12,7 +12,7 @@
 
 ## 注意事项
 
-默认模型使用qwen3.5:9b，32k上下文长度，需要8GB显存才能本地高速运行，如果显存不足，换成`qwen3.5:4b`或更小的模型
+默认模型使用`qwen3.5:9b`，32k上下文长度，需要8GB显存才能本地高速运行，如果显存不足，换成`qwen3.5:4b`或更小的模型
 
 
 ## 环境安装步骤
@@ -89,32 +89,6 @@ uv run novel_review.py --book-name "剑影江湖"
 uv run novel_review.py --model "qw" --book-name "剑影江湖" --output-dir "./dist/"
 ```
 
-### 洗稿器
-
-**novel_clean.py**：
-- 实现小说正文洗稿功能
-- 删除首尾可能存在的"第几部第几章"和"本章完"之类与小说正文无关的内容
-- 支持批量处理多个小说
-
-**参数说明：**
-
-- `--model, -m`：模型名称，默认为"qw"
-- `--book-name, -n`：小说书名，如不提供则处理输出目录下所有小说
-- `--output-dir, -o`：输出目录路径，默认为"./dist/"
-
-**示例：**
-
-```sh
-# 无参数，处理输出目录下所有小说
-uv run novel_clean.py
-
-# 仅指定小说书名，处理该小说
-uv run novel_clean.py --book-name "剑影江湖"
-
-# 全参数自定义
-uv run novel_clean.py --model "qw" --book-name "剑影江湖" --output-dir "./dist/"
-```
-
 
 ## 工作流程
 
@@ -141,10 +115,12 @@ uv run novel_clean.py --model "qw" --book-name "剑影江湖" --output-dir "./di
     │   ├── 大纲.md     # 部大纲，包括该部各章节的大致内容
     │   ├── 第1章-<章节名>/
     │   │   ├── 大纲.md # 章节大纲
+    │   │   ├── 正文.diff # 正文清理前后差异
     │   │   ├── 正文.md # 章节正文
     │   │   └── 正文.txt # 清理后的章节正文
     │   ├── 第2章-<章节名>/
     │   │   ├── 大纲.md
+    │   │   ├── 正文.diff
     │   │   ├── 正文.md
     │   │   └── 正文.txt
     │   └── ...
@@ -152,6 +128,7 @@ uv run novel_clean.py --model "qw" --book-name "剑影江湖" --output-dir "./di
     │   ├── 大纲.md
     │   ├── 第1章-<章节名>/
     │   │   ├── 大纲.md
+    │   │   ├── 正文.diff
     │   │   ├── 正文.md
     │   │   └── 正文.txt
     │   └── ...
