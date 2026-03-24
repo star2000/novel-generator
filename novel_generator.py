@@ -221,9 +221,7 @@ class NovelGenerator:
                     new_content += chunk.message.content
                     print(chunk.message.content, end='', flush=True)
                 print()
-                if only_chapter_name in new_content:
-                    continue
-                if only_part_name in new_content:
+                if only_chapter_name in new_content and only_part_name in new_content:
                     continue
                 new_content = u.markdown_to_text(new_content)
                 cleaned_path.write_text(new_content, encoding="utf-8")
