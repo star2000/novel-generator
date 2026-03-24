@@ -203,29 +203,28 @@ class NovelGenerator:
             ])
         content = (self.book_output_dir / path_name).read_text(encoding="utf-8")
         cleaned_path = self.book_output_dir / path_name.replace('.md', '.txt')
-        if cleaned_path.exists():
-            cleaned_content = cleaned_path.read_text(encoding="utf-8")
-        else:
-            cleaned_content = ''
         only_chapter_name = chapter_name.split('-', 1)[1]
         only_part_name = part_name.split('-', 1)[1]
-        if not cleaned_path.exists() or only_chapter_name in cleaned_content and only_part_name in cleaned_content:
-            while True:
+        while True:
+            if cleaned_path.exists():
+                cleaned_content = cleaned_path.read_text(encoding="utf-8")
+            else:
                 stream = self.client(messages=[
                     {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该明说本章完，其余必须保持原样"},
                     {"role": "user", "content": content}
                 ])
-                new_content = ''
+                cleaned_content = ''
                 print(f'洗稿 {path_name}')
                 for chunk in stream:
-                    new_content += chunk.message.content
+                    cleaned_content += chunk.message.content
                     print(chunk.message.content, end='', flush=True)
                 print()
-                if only_chapter_name in new_content and only_part_name in new_content:
-                    continue
-                new_content = u.markdown_to_text(new_content)
-                cleaned_path.write_text(new_content, encoding="utf-8")
-                break
+                cleaned_content = u.markdown_to_text(cleaned_content)
+                cleaned_path.write_text(cleaned_content, encoding="utf-8")
+            if only_chapter_name in cleaned_content and only_part_name in cleaned_content:
+                cleaned_path.unlink()
+                continue
+            break
         diff_path = self.book_output_dir / path_name.replace('.md', '.diff')
         if not diff_path.exists():
             raw_content = u.markdown_to_text(content)
