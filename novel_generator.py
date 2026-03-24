@@ -201,9 +201,13 @@ class NovelGenerator:
                 {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。叙事要顺畅，角色要有深度，情节要有张力"},
                 {"role": "user", "content": f"{settings_content}\n\n{chapter_outline_content}"}
             ])
+        content = (self.book_output_dir / path_name).read_text(encoding="utf-8")
         cleaned_path = self.book_output_dir / path_name.replace('.md', '.txt')
-        if not cleaned_path.exists():
-            content = (self.book_output_dir / path_name).read_text(encoding="utf-8")
+        if cleaned_path.exists():
+            cleaned_content = cleaned_path.read_text(encoding="utf-8")
+        else:
+            cleaned_content = ''
+        if not cleaned_path.exists() or chapter_name in cleaned_content or part_name in cleaned_content:
             while True:
                 stream = self.client(messages=[
                     {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该明说本章完，其余必须保持原样"},
@@ -224,7 +228,6 @@ class NovelGenerator:
                 break
         diff_path = self.book_output_dir / path_name.replace('.md', '.diff')
         if not diff_path.exists():
-            content = (self.book_output_dir / path_name).read_text(encoding="utf-8")
             raw_content = u.markdown_to_text(content)
             cleaned_content = cleaned_path.read_text(encoding="utf-8")
             diff_text = u.diff(raw_content, cleaned_content)
