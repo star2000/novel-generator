@@ -207,7 +207,7 @@ class NovelGenerator:
             cleaned_content = cleaned_path.read_text(encoding="utf-8")
         else:
             cleaned_content = ''
-        if not cleaned_path.exists() or chapter_name in cleaned_content or part_name in cleaned_content:
+        if not cleaned_path.exists() or chapter_name.rsplit('-')[1] in cleaned_content or part_name.rsplit('-')[1] in cleaned_content:
             while True:
                 stream = self.client(messages=[
                     {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该明说本章完，其余必须保持原样"},
