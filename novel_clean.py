@@ -36,7 +36,7 @@ def clean_novel(model: str, novel_dir: Path):
                 print(f"处理 「{part.name}」 「{chapter.name}」 ...")
                 content = text.read_text(encoding='utf-8')
                 stream = chat(messages=[
-                    {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该明说本章完，其余部分保持原样"},
+                    {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该明说本章完，其余必须保持原样"},
                     {"role": "user", "content": content}
                 ])
                 new_content = ''
