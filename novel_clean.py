@@ -36,7 +36,7 @@ def clean_novel(model: str, novel_dir: Path):
                 print(f"处理 「{part.name}」 「{chapter.name}」 ...")
                 content = text.read_text(encoding='utf-8')
                 response = chat(messages=[
-                    {"role": "system", "content": "你是一个小说整理器，将用户输入的小说正文，删除第几部第几章和本章完之类的与小说正文无关的部分，尽量自然地改动，然后输出整理后的文本。"},
+                    {"role": "system", "content": "你是一个小说洗稿器，将用户输入的小说正文，删除首尾可能出现的第几部第几章和本章完之类的与小说正文无关的部分，尽量自然地改动，然后输出洗稿后的文本。"},
                     {"role": "user", "content": content}
                 ])
                 new_content = markdown_to_text(response.message.content or content)
@@ -48,7 +48,7 @@ def clean_novel(model: str, novel_dir: Path):
 
 if __name__ == "__main__":
     # 解析命令行参数
-    parser = argparse.ArgumentParser(description="小说正文整理器")
+    parser = argparse.ArgumentParser(description="小说正文洗稿器")
     parser.add_argument("--model", '-m', type=str, default="qw", help="模型名称")
     parser.add_argument("--output-dir", '-o', type=str, default="./dist/", help="输出目录路径")
     parser.add_argument("--book-name", '-n', type=str, help="小说书名")
