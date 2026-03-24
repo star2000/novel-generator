@@ -36,14 +36,14 @@ def clean_novel(model: str, novel_dir: Path):
                 print(f"处理 「{part.name}」 「{chapter.name}」 ...")
                 content = text.read_text(encoding='utf-8')
                 response = chat(messages=[
-                    {"role": "system", "content": "你是一个小说洗稿器，根据用户输入的小说草稿，仅清理掉其中关于章节开始或结束的部分词语，其余保持原样，然后输出洗稿后的文本。"},
+                    {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现现在是第几章第几部，在结尾明说本章完会破坏读者体验，其余部分保持原样"},
                     {"role": "user", "content": content}
                 ])
-                new_content = markdown_to_text(response.message.content or content)
-                diff_text = diff(content, new_content)
-                (chapter/ '正文.txt').write_text(new_content, encoding='utf-8')
+                diff_text = diff(content, response.message.content)
                 (chapter/ '差异.txt').write_text(diff_text, encoding='utf-8')
                 print(diff_text)
+                new_content = markdown_to_text(response.message.content or content)
+                (chapter/ '正文.txt').write_text(new_content, encoding='utf-8')
 
 
 if __name__ == "__main__":
