@@ -36,7 +36,7 @@ def clean_novel(model: str, novel_dir: Path):
                 print(f"处理 「{part.name}」 「{chapter.name}」 ...")
                 content = text.read_text(encoding='utf-8')
                 response = chat(messages=[
-                    {"role": "system", "content": "你是一个小说洗稿器，根据用户输入的小说草稿，仅清理掉其中关于章节的部分词，其余保持原样，然后输出洗稿后的文本。"},
+                    {"role": "system", "content": "你是一个小说洗稿器，根据用户输入的小说草稿，仅清理掉其中关于章节开始或结束的部分词语，其余保持原样，然后输出洗稿后的文本。"},
                     {"role": "user", "content": content}
                 ])
                 new_content = markdown_to_text(response.message.content or content)
