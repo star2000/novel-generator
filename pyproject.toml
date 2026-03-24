@@ -5,7 +5,9 @@ version = "0.0.1"
 description = "高质量长篇小说生成器"
 requires-python = ">=3.13"
 dependencies = [
+    "beautifulsoup4>=4.14.3",
     "diff-match-patch>=20241021",
+    "markdown>=3.10.2",
     "ollama>=0.6.1",
 ]
 

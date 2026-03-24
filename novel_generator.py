@@ -50,7 +50,7 @@ class NovelGenerator:
             'content':f"请只用中文生成 {path_name} 的内容"
         }]
         path.parent.mkdir(parents=True, exist_ok=True)
-        settings_content = self.read_text("设定集.txt")
+        settings_content = self.read_text("设定集.md")
         fix_messages:list[ollama.Message] = []
         while True:
             stream = self.client(messages=messages+fix_messages+output_messages)
@@ -99,14 +99,14 @@ class NovelGenerator:
 
     def generate_outline(self):
         """生成总纲文件"""
-        self.generate_file("总纲.txt", [
+        self.generate_file("总纲.md", [
             {"role": "system", "content": "你是一个专业的小说总纲生成器，根据用户的要求生成小说的总纲，包括有多少部以及每一部的大致内容。仅输出总纲内容，不包含任何额外的内容和符号。"},
             {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}"}
         ])
 
     def generate_total_part_num(self):
         """根据总纲生成总部数"""
-        outline_content = self.read_text("总纲.txt")
+        outline_content = self.read_text("总纲.md")
         return int(self.generate('生成最大部数', [
             {"role": "system", "content": "你是一个小说部数计数器，根据总纲，仅输出阿拉伯数字格式的最大部数，不包含任何额外的内容和符号。"},
             {"role": "user", "content": outline_content}
@@ -114,8 +114,8 @@ class NovelGenerator:
     
     def generate_settings(self):
         """生成设定集文件"""
-        outline_content = self.read_text("总纲.txt")
-        self.generate_file("设定集.txt", [
+        outline_content = self.read_text("总纲.md")
+        self.generate_file("设定集.md", [
             {"role": "system", "content": "你是一个专业的小说设定集生成器，根据小说总纲写各种设定，比如世界背景、主角（至少13个）、配角（至少26个）、地点、事件、势力，这些都要有完善的背景和细节，以及每个事件都要标注发生时间，主角和配角都要有足够的人物深度"},
             {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{outline_content}"}
         ])
@@ -124,7 +124,7 @@ class NovelGenerator:
         """根据部号生成部名"""
         if dir := next(self.book_output_dir.glob(f"第{part_num}部-*"), None):
             return dir.name
-        outline_content = self.read_text("总纲.txt")
+        outline_content = self.read_text("总纲.md")
         part_name = self.generate(f'生成第{part_num}部-部名', [
             {"role": "system", "content": "你是一个专业的小说部名生成器，根据总纲生成该部的名称。仅输出部名，不包含任何额外的内容和符号。"},
             {"role": "user", "content": f"{outline_content}\n\n为第{part_num}部生成名称，仅输出部名，不包含部号，不包含第几部："}
@@ -133,11 +133,11 @@ class NovelGenerator:
  
     def generate_part_outline(self, part_name):
         """生成部大纲文件"""
-        path_name = f"{part_name}/大纲.txt"
+        path_name = f"{part_name}/大纲.md"
         if self.exists(path_name):
             return
-        settings_content = self.read_text("设定集.txt")
-        outline_content = self.read_text("总纲.txt")
+        settings_content = self.read_text("设定集.md")
+        outline_content = self.read_text("总纲.md")
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说部大纲生成器，根据设定集和总纲生成该部的大纲，包括有多少章以及每一章的大致内容，包括主要事件、剧情伏笔、角色发展、环境变化等。"},
             {"role": "user", "content": f"{settings_content}\n\n{outline_content}"}
@@ -145,7 +145,7 @@ class NovelGenerator:
 
     def generate_total_chapter_num(self, part_name: str) -> int:
         """根据部大纲生成该部的章数"""
-        part_outline_content = self.read_text(f"{part_name}/大纲.txt")
+        part_outline_content = self.read_text(f"{part_name}/大纲.md")
         return int(self.generate(f'生成{part_name}的最大章数', [
             {"role": "system", "content": "你是一个小说章数计数器，根据部大纲，仅输出阿拉伯数字格式的最大章数，不包含任何额外的内容和符号。"},
             {"role": "user", "content": part_outline_content}
@@ -155,7 +155,7 @@ class NovelGenerator:
         """根据章节号生成章节名"""
         if dir := next(self.book_output_dir.glob(f"{part_name}/第{chapter_num}章-*"), None):
             return dir.name
-        part_outline_content = self.read_text(f"{part_name}/大纲.txt")
+        part_outline_content = self.read_text(f"{part_name}/大纲.md")
         chapter_name = self.generate(f'生成第{chapter_num}章-章节名', [
             {"role": "system", "content": "你是一个专业的小说章节名生成器，根据部大纲生成该章节的名称。仅输出章节名，不包含章节号和部号，不包含第几章，不包含任何额外的内容和符号。"},
             {"role": "user", "content": f"{part_outline_content}\n\n为{part_name}的第{chapter_num}章生成名称，仅输出章节名，不包含章节号和部号，不包含第几章："}
@@ -177,14 +177,14 @@ class NovelGenerator:
 
     def generate_chapter_outline(self, part_name: str, chapter_name: str):
         """生成章节大纲文件"""
-        path_name = f"{part_name}/{chapter_name}/大纲.txt"
+        path_name = f"{part_name}/{chapter_name}/大纲.md"
         if self.exists(path_name):
             return
-        settings_content = self.read_text("设定集.txt")
-        part_outline_content = self.read_text(f"{part_name}/大纲.txt")
+        settings_content = self.read_text("设定集.md")
+        part_outline_content = self.read_text(f"{part_name}/大纲.md")
         prev_content = ''
         if prev_chapter_dir := self.get_prev_chapter_dir(part_name, chapter_name):
-            if prev_chapter_outline_content := self.read_text(prev_chapter_dir / '大纲.txt'):
+            if prev_chapter_outline_content := self.read_text(prev_chapter_dir / '大纲.md'):
                 prev_content += f"\n\n{prev_chapter_outline_content}"
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说章节大纲生成器，主要事件、剧情伏笔、角色发展、环境变化等，以及配角要有一定的人物深度"},
@@ -193,11 +193,11 @@ class NovelGenerator:
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
         """生成章节正文文件"""
-        path_name = f"{part_name}/{chapter_name}/正文.txt"
+        path_name = f"{part_name}/{chapter_name}/正文.md"
         if self.exists(path_name):
             return
-        settings_content = self.read_text("设定集.txt")
-        chapter_outline_content = self.read_text(f"{part_name}/{chapter_name}/大纲.txt")
+        settings_content = self.read_text("设定集.md")
+        chapter_outline_content = self.read_text(f"{part_name}/{chapter_name}/大纲.md")
         self.generate_file(path_name, [
             {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。叙事要顺畅，角色要有深度，情节要有张力"},
             {"role": "user", "content": f"{settings_content}\n\n{chapter_outline_content}"}
@@ -216,9 +216,9 @@ class NovelGenerator:
         self.setup_book_output_dir()
 
         if self.user_input is not None:
-            (self.book_output_dir / "要求.txt").write_text(self.user_input, encoding="utf-8")
+            (self.book_output_dir / "要求.md").write_text(self.user_input, encoding="utf-8")
         else:
-            self.user_input = self.read_text("要求.txt")
+            self.user_input = self.read_text("要求.md")
 
         # 3. 生成总纲和设定集
         self.generate_outline()

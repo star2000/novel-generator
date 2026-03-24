@@ -5,6 +5,6 @@ os.environ['NO_PROXY'] = '127.0.0.1,localhost'
 
 
 
-def get_client(model:str):
+def get_client(model:str, stream=True, think=False):
     import ollama
-    return functools.partial(ollama.chat, model=model, stream=True, think=False)
+    return functools.partial(ollama.chat, model=model, stream=stream, think=think)
