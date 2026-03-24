@@ -204,18 +204,24 @@ class NovelGenerator:
         cleaned_path = self.book_output_dir / path_name.replace('.md', '.txt')
         if not cleaned_path.exists():
             content = (self.book_output_dir / path_name).read_text(encoding="utf-8")
-            stream = self.client(messages=[
-                {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该明说本章完，其余必须保持原样"},
-                {"role": "user", "content": content}
-            ])
-            new_content = ''
-            print(f'洗稿 {path_name}')
-            for chunk in stream:
-                new_content += chunk.message.content
-                print(chunk.message.content, end='', flush=True)
-            print()
-            new_content = u.markdown_to_text(new_content)
-            cleaned_path.write_text(new_content, encoding="utf-8")
+            while True:
+                stream = self.client(messages=[
+                    {"role": "system", "content": "你是一个小说正文洗稿器，正文开头不应该出现第几章第几部，结尾不应该明说本章完，其余必须保持原样"},
+                    {"role": "user", "content": content}
+                ])
+                new_content = ''
+                print(f'洗稿 {path_name}')
+                for chunk in stream:
+                    new_content += chunk.message.content
+                    print(chunk.message.content, end='', flush=True)
+                print()
+                if chapter_name in new_content:
+                    continue
+                if part_name in new_content:
+                    continue
+                new_content = u.markdown_to_text(new_content)
+                cleaned_path.write_text(new_content, encoding="utf-8")
+                break
         diff_path = self.book_output_dir / path_name.replace('.md', '.diff')
         if not diff_path.exists():
             content = (self.book_output_dir / path_name).read_text(encoding="utf-8")
