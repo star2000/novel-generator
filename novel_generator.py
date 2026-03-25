@@ -124,7 +124,7 @@ class NovelGenerator:
         outline_content = self.read_text("总纲.md")
         part_name = self.generate(f'提取第{part_num}部-部名', [
             {"role": "system", "content": "你是一个专业的小说部名提取器，根据总纲提取该部的名称。仅输出部名，不包含部号"},
-            {"role": "user", "content": f"{outline_content}\n\n输出第{part_num}部的章节名，不包含部号或第几部："}
+            {"role": "user", "content": f"{outline_content}\n\n输出第{part_num}部的部名，不包含部号或第几部："}
         ])
         return f"第{part_num}部-{part_name}"
  
