@@ -1,22 +1,18 @@
 import argparse
 import math
 from pathlib import Path
-import re
 
-from utils import get_client
+import utils as u
+
 
 def review_novel(novel_dir: Path):
     part_num = 0
     chapter_num = 0
     word_list = [f'《{novel_dir.name}》']
-    parts = list(novel_dir.glob('*/'))
-    parts.sort(key=lambda x: int(re.search(r'\d+', x.name)[0]))
-    for part in parts:
+    for part in u.sorted_subdirs(novel_dir):
         part_num += 1
         word_list.append(part.name)
-        chapters = list(part.glob('*/'))
-        chapters.sort(key=lambda x: int(re.search(r'\d+', x.name)[0]))
-        for chapter in chapters:
+        for chapter in u.sorted_subdirs(part):
             text = (chapter / '正文.txt')
             if text.exists():
                 chapter_num += 1
@@ -30,20 +26,23 @@ def review_novel(novel_dir: Path):
         {'role': 'user', 'content': words+'\n\n请对小说的各方面做出评价和评分'},
     ], options={'num_ctx': num_ctx})
     print('='*80)
-    print(f"《{novel_dir.name}》 共{part_num}部{chapter_num}章{word_num}字 评价：")
+    print(f"《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价：")
     for chunk in stream:
-        print(chunk.message.content, end='', flush=True)
+        if chunk.message.content:
+            print(chunk.message.content, end='', flush=True)
     print()
+
 
 if __name__ == "__main__":
     # 解析命令行参数
     parser = argparse.ArgumentParser(description="小说评价器")
     parser.add_argument("--model", '-m', type=str, default="qw", help="模型名称")
-    parser.add_argument("--output-dir", '-o', type=str, default="./dist/", help="输出目录路径")
+    parser.add_argument("--output-dir", '-o', type=str,
+                        default="./dist/", help="输出目录路径")
     parser.add_argument("--book-name", '-n', type=str, help="小说书名")
     args = parser.parse_args()
 
-    chat = get_client(args.model)
+    chat = u.get_chat(args.model)
 
     output_dir = Path(args.output_dir)
 
