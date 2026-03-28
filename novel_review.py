@@ -8,19 +8,21 @@ import utils as u
 def review_novel(novel_dir: Path):
     part_num = 0
     chapter_num = 0
+    word_num = 0
     word_list = [f'《{novel_dir.name}》']
     for part in u.sorted_subdirs(novel_dir):
         part_num += 1
         word_list.append(part.name)
         for chapter in u.sorted_subdirs(part):
-            text = (chapter / '正文.txt')
-            if text.exists():
+            word_file = (chapter / '正文.txt')
+            if word_file.exists():
                 chapter_num += 1
                 word_list.append(chapter.name)
-                word_list.append(text.read_text(encoding='utf-8'))
+                word = word_file.read_text(encoding='utf-8')
+                word_num += len(word)
+                word_list.append(word)
     words = '\n'.join(word_list)
-    word_num = len(words)
-    num_ctx = 2**max(12, min(18, math.ceil(math.log2(word_num))))
+    num_ctx = 2**max(12, min(18, math.ceil(math.log2(len(words)))))
     stream = chat(messages=[
         {'role': 'system', 'content': '你是一个资深的小说读者，根据用户输入的小说内容，对各方面做出评价和评分'},
         {'role': 'user', 'content': words +
