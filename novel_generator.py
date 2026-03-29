@@ -70,7 +70,7 @@ class NovelGenerator:
                 break
             check = self.generate(f'检查 {path_name}', [
                 {"role": "system",
-                    "content": "你是一个资深的小说审稿人，根据设定集，对用户的输入文本的各方面做出评价和评分（1-10分），重点关注是否存在情节叙事不清、逻辑结构混乱、内容质量低下等问题，并提出优化建议"},
+                    "content": "你是一个资深的小说审稿人，根据设定集，对用户的输入文本的各方面做出评价和评分（1-10分）并提出优化建议"},
                 {"role": "user", "content": f"{settings_content}\n\n{path_name}：{content}"}
             ])
             fix_messages = [{
