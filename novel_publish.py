@@ -177,7 +177,12 @@ if TYPE_CHECKING:
 class FanQieNovelAuthorClient:
     BASE_URL = 'https://fanqienovel.com/api/author/'
 
+    @staticmethod
+    def check_sessionid(sessionid: str):
+        assert re.match(r'[a-z0-9]{32}', sessionid), f'{sessionid} 会话id格式错误'
+
     def __init__(self, sessionid: str):
+        self.check_sessionid(sessionid)
         self.cookies = {
             'sessionid': sessionid,
         }
