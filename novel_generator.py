@@ -100,26 +100,20 @@ class NovelGenerator:
         self.book_output_dir = self.output_dir / self.book_name
         self.book_output_dir.mkdir(parents=True, exist_ok=True)
 
+    def generate_settings(self):
+        """生成设定集文件"""
+        self.generate_file("设定集.md", [
+            {"role": "system", "content": "你是一个专业的热门高质量网络小说作家，写设定集，要将模糊的灵感转化为可执行的商业蓝图，分析灵感核心，提炼出“爽点”和“期待感”，并构建世界观设定（力量体系、社会阶级、金手指机制）、人物小传（主角人设、主要配角、反派设计（需有智商和魅力））"},
+            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}"}
+        ])
+
     def generate_outline(self):
         """生成总纲文件"""
+        settings_content = self.read_text("设定集.md")
+
         self.generate_file("总纲.md", [
-            {"role": "system", "content": '''\
-你是一个专业的小说作者，根据用户的要求生成小说的总纲，包括有多少卷以及每一卷的大致内容。仅输出总纲内容，不包含任何额外的内容和符号。
-
-作为小说作者，你将写作视为一座**精密的建筑工程**与**一场流动的心理实验**的结合体。你不会依赖灵感偶发，而是建立一套严谨、可复现的闭环系统。
-
-一：锚定“原点” (The Origin)
-在动笔写任何一个字之前，你必须先确立不可动摇的基石。如果这块基石不稳，后续所有建筑都是空中楼阁。
-*   **确立核心驱动力**：在开卷前，你必须能清晰回答：**“主角最大的渴望是什么？”** 以及 **“阻止他的是什么？”** 这两个问题的答案必须绝对明确，没有任何模糊地带。
-*   **定义世界观法则**：无论幻想还是现实题材，世界运行的底层逻辑（魔法体系、社会阶层、物理规则）必须在第一稿中就被设定完毕，且不能存在逻辑悖论。
-
-二：构建“骨架” (The Architecture)
-拒绝在不知道终点的情况下盲目奔跑。你会构建一个**分层的结构图**：
-*   **宏观层**：规划故事弧光（Character Arc）。主角从一个状态开始，经历一系列事件，最终发生本质变化。这个变化必须是逻辑必然的，而非随机的运气。
-*   **中观层**：拆解关键情节点（Plot Points）。将故事拆解为 3-5 个重大转折点，确保每个转折都能由前一个事件引发（因果律闭环）。
-*   **微观层**：草拟场景清单。列出每一章需要展示的核心信息和情绪目标，但**不写出具体对话**，仅作为检查清单。
-'''},
-            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}"}
+            {"role": "system", "content": '''你是一个专业的小说作者，根据用户的输入，生成小说的总纲，要有一句话讲清楚故事卖点的核心梗，然后定义主线脉络，并划分大卷，每卷设定具体的字数目标和完结节点，并设计 3-5 个小高潮（卷高潮）。在第一卷的开头专门设计黄金三章的起承转合（切入冲突、抛出悬念、确立期待）。'''},
+            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}"}
         ])
 
     def generate_total_part_num(self):
@@ -129,14 +123,6 @@ class NovelGenerator:
             {"role": "system", "content": "你是一个小说卷数计数器，根据总纲，仅输出阿拉伯数字格式的最大卷数，不包含任何额外的内容和符号。"},
             {"role": "user", "content": outline_content}
         ]))
-
-    def generate_settings(self):
-        """生成设定集文件"""
-        outline_content = self.read_text("总纲.md")
-        self.generate_file("设定集.md", [
-            {"role": "system", "content": "你是一个专业的小说设定集生成器，根据小说总纲写各种设定，比如世界背景、主角（至少13个）、配角（至少26个）、地点、事件、势力，这些都要有完善的背景和细节，以及每个事件都要标注发生时间，主角和配角都要有足够的人物深度"},
-            {"role": "user", "content": f"《{self.book_name}》\n\n要求：{self.user_input}\n\n{outline_content}"}
-        ])
 
     def generate_part_name(self, part_num: int) -> str:
         """根据卷号生成卷名"""
@@ -157,7 +143,7 @@ class NovelGenerator:
         settings_content = self.read_text("设定集.md")
         outline_content = self.read_text("总纲.md")
         self.generate_file(path_name, [
-            {"role": "system", "content": "你是一个专业的小说卷大纲生成器，根据设定集和总纲生成该卷的大纲，包括有多少章以及每一章的大致内容，包括主要事件、剧情伏笔、角色发展、环境变化等。"},
+            {"role": "system", "content": "你是一个专业的热门高质量网络小说作家，写卷大纲，要有结构规划与节奏把控，结构规划要确保留存率，细化大纲，每章设计“钩子”（结尾悬念）。节奏把控要考虑“期待值管理”：爽点密度（每 5-8 章一个小爽点，每 15-20 章一个大高潮）。"},
             {"role": "user", "content": f"{settings_content}\n\n{outline_content}"}
         ])
 
@@ -208,7 +194,7 @@ class NovelGenerator:
                 prev_content += f"\n\n{prev_chapter_outline_content}"
         self.generate_file(path_name, [
             {"role": "system",
-                "content": "你是一个专业的小说章节大纲生成器，主要事件、剧情伏笔、角色发展、环境变化等，以及配角要有一定的人物深度"},
+                "content": "你是一个专业的热门高质量网络小说作家，写章节大纲，要屏蔽内心审查，关闭“逻辑纠错器”和“修辞美化器”。允许自己写出粗糙的草稿，只要它能连贯地讲述故事。展示而非告知：这是铁律。你不写“他很生气”，你只写“他摔碎了杯子，指关节泛白”。所有的情绪和背景信息，必须通过动作、环境、感官细节来呈现，绝不直接陈述。保持语势一致：根据场景切换调整叙事节奏。紧张时句子短促有力，抒情时句子绵长舒缓，但绝不为了炫技而破坏故事的沉浸感。"},
             {"role": "user", "content": f"{settings_content}\n\n{prev_content}\n\n{part_outline_content}"}
         ])
 
@@ -220,7 +206,7 @@ class NovelGenerator:
             chapter_outline_content = self.read_text(
                 f"{part_name}/{chapter_name}/大纲.md")
             self.generate_file(path_name, [
-                {"role": "system", "content": "你是一个专业的小说正文生成器，根据设定集和章节大纲生成高质量的章节正文。叙事要顺畅，角色要有深度，情节要有张力"},
+                {"role": "system", "content": "你是一个专业的热门高质量网络小说作家，写章节正文，要给章节大纲注入血肉和灵魂。**对话重构**：删除那些信息重复的对话。让人物说话像真人，带有各自的语气、口头禅和潜台词。**感官扩容**：补充视觉、听觉、嗅觉、触觉、味觉的描述，让环境变得可感知。**节奏微调**：调整段落长短，制造呼吸感。在读者情绪最紧绷的地方暂停，在最需要放松的地方推进。"},
                 {"role": "user", "content": f"{settings_content}\n\n{chapter_outline_content}"}
             ])
         content = (self.book_output_dir /
@@ -274,10 +260,10 @@ class NovelGenerator:
         else:
             self.user_input = self.read_text("要求.md")
 
-        # 3. 生成总纲和设定集
+        # 3. 生成设定集和总纲
+        self.generate_settings()
         self.generate_outline()
         total_part_num = self.generate_total_part_num()
-        self.generate_settings()
 
         # 4. 开始生成各卷内容
         part_num = 1
