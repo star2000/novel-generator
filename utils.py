@@ -25,7 +25,7 @@ def diff(old: str, new: str) -> str:
 
 def markdown_to_text(markdown_string: str) -> str:
     html = markdown.markdown(markdown_string)
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(html, 'html.parser')
     text = soup.get_text()
     text = re.sub(r'\n\s*\n', '\n\n', text)
     return text.strip()
@@ -36,14 +36,14 @@ def text_to_html(text: str) -> str:
     for l in text.splitlines():
         p = l.strip()
         if p:
-            ps.append(f"<p>{p}</p>")
-    return "".join(ps)
+            ps.append(f'<p>{p}</p>')
+    return ''.join(ps)
 
 
 def get_first_int(s: str) -> int:
     if match := re.search(r'\d+', s):
         return int(match.group())
-    raise ValueError(f"{s} 中未找到整数")
+    raise ValueError(f'{s} 中未找到整数')
 
 
 def sorted_subdirs(path: Path) -> list[Path]:

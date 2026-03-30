@@ -28,20 +28,20 @@ def review_novel(novel_dir: Path):
         {'role': 'user', 'content': words + '\n\n请对小说的各方面做出评价和评分'},
     ], options={'num_ctx': num_ctx})
     print('='*80)
-    print(f"《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价：")
+    print(f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价：')
     for chunk in stream:
         if chunk.message.content:
             print(chunk.message.content, end='', flush=True)
     print()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # 解析命令行参数
-    parser = argparse.ArgumentParser(description="小说评价器")
-    parser.add_argument("--model", '-m', type=str, default="qw", help="模型名称")
-    parser.add_argument("--output-dir", '-o', type=str,
-                        default="./dist/", help="输出目录路径")
-    parser.add_argument("--book-name", '-n', type=str, help="小说书名")
+    parser = argparse.ArgumentParser(description='小说评价器')
+    parser.add_argument('--model', '-m', type=str, default='qw', help='模型名称')
+    parser.add_argument('--output-dir', '-o', type=str,
+                        default='./dist/', help='输出目录路径')
+    parser.add_argument('--book-name', '-n', type=str, help='小说书名')
     args = parser.parse_args()
 
     chat = u.get_chat(args.model)
