@@ -90,7 +90,7 @@ class NovelGenerator:
     def generate_book_name(self):
         '''根据用户要求生成书名'''
         self.book_name = self.generate('生成书名', [
-            {'role': 'system', 'content': '你是一个专业的小说书名生成器，根据用户的输入，仅生成一个最合适的书名，书名要优雅、简介、符合用户要求，不能包含任何额外的内容和符号。'},
+            {'role': 'system', 'content': '你是一位热门网络小说作者，根据用户输入，起个书名，仅回答一个书名'},
             {'role': 'user', 'content': f'{self.user_input}'}
         ])
 
