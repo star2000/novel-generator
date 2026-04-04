@@ -42,7 +42,7 @@ class NovelGenerator:
         print()
         return content.strip()
 
-    def generate_file(self, path_name: str, messages: list[Message]):
+    def generate_file(self, path_name: str, messages: list[Message], inspect_times: int = 2):
         '''生成文件'''
         path = self.book_output_dir / path_name
         if path.exists():
@@ -66,8 +66,9 @@ class NovelGenerator:
                     content += chunk.message.content
                     print(chunk.message.content, end='', flush=True)
             print()
-            if fix_messages:
+            if inspect_times <= 0:
                 break
+            inspect_times -= 1
             check = self.generate(f'检查 {path_name}', [
                 {'role': 'system',
                     'content': '你是一位挑剔的资深读者，检查用户输入是否合理'},
