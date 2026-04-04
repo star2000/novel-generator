@@ -131,7 +131,7 @@ class NovelGenerator:
         settings_content = self.read_text('设定集.md')
 
         self.generate_file('总纲.md', [
-            {'role': 'system', 'content': '你是一个专业的小说作者，根据用户的输入，生成小说的总纲，要有一句话讲清楚故事卖点的核心梗，然后定义主线脉络，并划分大卷，每卷设定具体的字数目标和完结节点，并设计 3-5 个小高潮（卷高潮）。在第一卷的开头专门设计黄金三章的起承转合（切入冲突、抛出悬念、确立期待）。'},
+            {'role': 'system', 'content': '你是一个专业的小说作者，根据用户的输入，生成小说的总纲，要有一句话讲清楚故事卖点的核心梗，然后定义主线脉络，并划分大卷，每卷设定具体的字数目标和完结节点。在第一卷的开头专门设计黄金三章的起承转合（切入冲突、抛出悬念、确立期待）。'},
             {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}'}
         ])
 
@@ -162,7 +162,7 @@ class NovelGenerator:
         settings_content = self.read_text('设定集.md')
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
-            {'role': 'system', 'content': '你是一个专业的热门高质量网络小说作家，写卷大纲，要有结构规划与节奏把控，结构规划要确保留存率，细化大纲，每章设计“钩子”（结尾悬念）。节奏把控要考虑“期待值管理”：爽点密度（每 5-8 章一个小爽点，每 15-20 章一个大高潮）。'},
+            {'role': 'system', 'content': '你是一个专业的热门高质量网络小说作家，写卷大纲，要有结构规划与节奏把控，结构规划要确保留存率，细化大纲，每章设计“钩子”（结尾悬念）。节奏把控要考虑“期待值管理”：“憋屈 - 爆发”的循环不要超过三章。最好是“小冲突（被骚扰） -> 心理博弈 -> 快速反杀 -> 嘲讽反派”。让读者在压抑后立刻得到释放。'},
             {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}'}
         ])
 
