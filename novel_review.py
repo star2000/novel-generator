@@ -24,7 +24,7 @@ def review_novel(novel_dir: Path):
     words = '\n'.join(word_list)
     num_ctx = 2**max(15, min(18, math.ceil(math.log2(len(words)))))
     stream = chat(messages=[
-        {'role': 'system', 'content': '你是一个资深的小说读者，根据用户输入的小说内容，对各方面做出评价和评分'},
+        {'role': 'system', 'content': '你是一个资深的热门网络小说读者，根据用户输入的小说内容，对各方面做出评价和评分'},
         {'role': 'user', 'content': words + '\n\n请对小说的各方面做出评价和评分'},
     ], options={'num_ctx': num_ctx})
     print('='*80)
