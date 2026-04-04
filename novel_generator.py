@@ -79,6 +79,7 @@ class NovelGenerator:
                         'content': f'{settings_content}\n\n{path_name}：{content}'}
                 ])
             else:
+                print('='*80)
                 check = input(f'{path_name} 应该如何调整：')
                 if not check:
                     break
