@@ -112,10 +112,11 @@ class NovelGenerator:
     def save_user_input(self, user_input: str | None = None):
         '''保存用户输入'''
         user_input = user_input or self.user_input
+        f = self.book_output_dir / '要求.md'
         if user_input is None:
-            self.user_input = self.read_text('要求.md')
+            self.user_input = f.read_text(encoding='utf-8')
         else:
-            (self.book_output_dir / '要求.md').write_text(user_input, encoding='utf-8')
+            f.write_text(user_input, encoding='utf-8')
             self.user_input = user_input
 
     def generate_settings(self):
