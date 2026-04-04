@@ -54,7 +54,7 @@ class NovelGenerator:
             'content': f'请只用中文生成 {path_name} 的内容'
         }]
         path.parent.mkdir(parents=True, exist_ok=True)
-        settings_content = self.read_text('设定集.md') or self.user_input
+        settings_content = self.read_text('设定集.md')
         fix_messages: list[Message] = []
         inspect_times = self.inspect_times
         while True:
@@ -68,14 +68,20 @@ class NovelGenerator:
                     content += chunk.message.content
                     print(chunk.message.content, end='', flush=True)
             print()
-            if inspect_times <= 0:
-                break
-            inspect_times -= 1
-            check = self.generate(f'检查 {path_name}', [
-                {'role': 'system',
-                    'content': '你是一位挑剔的热门网络小说读者，检查用户输入是否合理'},
-                {'role': 'user', 'content': f'{settings_content}\n\n{path_name}：{content}'}
-            ])
+            if settings_content:
+                if inspect_times <= 0:
+                    break
+                inspect_times -= 1
+                check = self.generate(f'检查 {path_name}', [
+                    {'role': 'system',
+                        'content': '你是一位挑剔的热门网络小说读者，检查用户输入是否合理'},
+                    {'role': 'user',
+                        'content': f'{settings_content}\n\n{path_name}：{content}'}
+                ])
+            else:
+                check = input(f'{path_name} 应该如何调整：')
+                if not check:
+                    break
             fix_messages = [{
                 'role': 'assistant',
                 'content': content
