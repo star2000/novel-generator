@@ -73,7 +73,7 @@ class NovelGenerator:
             inspect_times -= 1
             check = self.generate(f'检查 {path_name}', [
                 {'role': 'system',
-                    'content': '你是一位挑剔的资深读者，检查用户输入是否合理'},
+                    'content': '你是一位挑剔的热门网络小说读者，检查用户输入是否合理'},
                 {'role': 'user', 'content': f'{settings_content}\n\n{path_name}：{content}'}
             ])
             fix_messages = [{
