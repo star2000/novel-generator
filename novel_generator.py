@@ -13,12 +13,11 @@ if TYPE_CHECKING:
 
 
 class NovelGenerator:
-    def __init__(self, model: str, output_dir: str, check_times: int, user_input: str | None = None, book_name: str | None = None):
+    def __init__(self, model: str, output_dir: str, user_input: str | None = None, book_name: str | None = None):
         self.chat = u.get_chat(model)
         self.output_dir = Path(output_dir)
         self.user_input = user_input
         self.book_name = book_name
-        self.check_times = check_times
 
     def exists(self, path_name: str) -> bool:
         '''检查文件是否存在'''
@@ -43,7 +42,7 @@ class NovelGenerator:
         print()
         return content.strip()
 
-    def generate_file(self, path_name: str, messages: list[Message]):
+    def generate_file(self, path_name: str, messages: list[Message], check_times: int = 1):
         '''生成文件'''
         path = self.book_output_dir / path_name
         if path.exists():
@@ -56,7 +55,6 @@ class NovelGenerator:
         path.parent.mkdir(parents=True, exist_ok=True)
         settings_content = self.read_text('设定集.md')
         fix_messages: list[Message] = []
-        check_times = self.check_times
         while True:
             stream = self.chat(
                 messages=messages+fix_messages+output_messages)
@@ -68,24 +66,15 @@ class NovelGenerator:
                     content += chunk.message.content
                     print(chunk.message.content, end='', flush=True)
             print('\n'+('='*80))
-            check = ''
             if check_times <= 0:
-                if not settings_content:
-                    check = input(f'{path_name} 修改建议：')
-                    if not check:
-                        break
-                    self.save_user_input(f'{self.user_input}\n{check}')
-                    check_times = 1
-                else:
-                    break
-            if not check:
-                check_times -= 1
-                check = self.generate(f'检查 {path_name}', [
-                    {'role': 'system',
-                        'content': '你是一个资深的热门网络小说读者，检查用户输入是否合理'},
-                    {'role': 'user',
-                        'content': f'{settings_content or self.user_input}\n\n{path_name}：{content}'}
-                ])
+                break
+            check_times -= 1
+            check = self.generate(f'检查 {path_name}', [
+                {'role': 'system',
+                    'content': '你是一个资深的热门网络小说读者，检查用户输入是否合理'},
+                {'role': 'user',
+                    'content': f'{settings_content or self.user_input}\n\n{path_name}：{content}'}
+            ])
             fix_messages = [{
                 'role': 'assistant',
                 'content': content
@@ -124,7 +113,7 @@ class NovelGenerator:
         self.generate_file('设定集.md', [
             {'role': 'system', 'content': '你是一个专业的热门高质量网络小说作家，写设定集，要将模糊的灵感转化为可执行的商业蓝图，分析灵感核心，提炼出“爽点”和“期待感”，并构建世界观设定（力量体系、社会阶级、金手指机制）、人物小传（主角人设、主要配角、反派设计（需有智商和魅力））'},
             {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}'}
-        ])
+        ], 5)
 
     def generate_outline(self):
         '''生成总纲文件'''
@@ -133,7 +122,7 @@ class NovelGenerator:
         self.generate_file('总纲.md', [
             {'role': 'system', 'content': '你是一个专业的小说作者，根据用户的输入，生成小说的总纲，要有一句话讲清楚故事卖点的核心梗，然后定义主线脉络，并划分大卷，每卷设定具体的字数目标和完结节点。在第一卷的开头专门设计黄金三章的起承转合（切入冲突、抛出悬念、确立期待）。'},
             {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}'}
-        ])
+        ], 4)
 
     def generate_total_part_num(self):
         '''根据总纲生成总卷数'''
@@ -164,7 +153,7 @@ class NovelGenerator:
         self.generate_file(path_name, [
             {'role': 'system', 'content': '你是一个专业的热门高质量网络小说作家，写卷大纲，要有结构规划与节奏把控，结构规划要确保留存率，细化大纲，每章设计“钩子”（结尾悬念）。节奏把控要考虑“期待值管理”：“憋屈 - 爆发”的循环不要超过三章。最好是“小冲突（被骚扰） -> 心理博弈 -> 快速反杀 -> 嘲讽反派”。让读者在压抑后立刻得到释放。'},
             {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}'}
-        ])
+        ], 3)
 
     def generate_total_chapter_num(self, part_name: str) -> int:
         '''根据卷大纲生成该卷的章数'''
@@ -215,7 +204,7 @@ class NovelGenerator:
             {'role': 'system',
                 'content': '你是一个专业的热门高质量网络小说作家，写章节大纲，要屏蔽内心审查，关闭“逻辑纠错器”和“修辞美化器”。允许自己写出粗糙的草稿，只要它能连贯地讲述故事。展示而非告知：这是铁律。你不写“他很生气”，你只写“他摔碎了杯子，指关节泛白”。所有的情绪和背景信息，必须通过动作、环境、感官细节来呈现，绝不直接陈述。保持语势一致：根据场景切换调整叙事节奏。紧张时句子短促有力，抒情时句子绵长舒缓，但绝不为了炫技而破坏故事的沉浸感。'},
             {'role': 'user', 'content': f'{settings_content}\n\n{prev_content}\n\n{part_outline_content}'}
-        ])
+        ], 2)
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
         '''生成章节正文文件'''
@@ -317,15 +306,12 @@ if __name__ == '__main__':
     parser.add_argument('--user-input', '-i', type=str, help='小说生成要求')
     parser.add_argument('--output-dir', '-o', type=str,
                         default='./dist/', help='输出目录路径')
-    parser.add_argument('--check-times', '-t', type=int, default=1,
-                        help='检查次数')
     args = parser.parse_args()
 
     # 初始化生成器
     generator = NovelGenerator(
         model=args.model,
         output_dir=args.output_dir,
-        check_times=args.check_times,
         user_input=args.user_input,
         book_name=args.book_name,
     )
