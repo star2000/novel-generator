@@ -67,7 +67,7 @@ class NovelGenerator:
                 if chunk.message.content:
                     content += chunk.message.content
                     print(chunk.message.content, end='', flush=True)
-            print('='*80)
+            print('\n'+('='*80))
             check = ''
             if check_times <= 0:
                 if not settings_content:
