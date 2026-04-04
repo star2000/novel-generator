@@ -74,6 +74,7 @@ class NovelGenerator:
                     check = input(f'{path_name} 修改建议：')
                     if not check:
                         break
+                    self.save_user_input(f'{self.user_input}\n{check}')
                     check_times = 1
                 else:
                     break
@@ -95,10 +96,6 @@ class NovelGenerator:
         path.write_text(content, encoding='utf-8')
         print(f'{path_name} 生成完成')
 
-    def get_user_input(self):
-        '''获取用户输入的小说要求'''
-        self.user_input = input('请输入小说生成要求：')
-
     def generate_book_name(self):
         '''根据用户要求生成书名'''
         self.book_name = self.generate('生成书名', [
@@ -111,6 +108,15 @@ class NovelGenerator:
         assert self.book_name
         self.book_output_dir = self.output_dir / self.book_name
         self.book_output_dir.mkdir(parents=True, exist_ok=True)
+
+    def save_user_input(self, user_input: str | None = None):
+        '''保存用户输入'''
+        user_input = user_input or self.user_input
+        if user_input is None:
+            self.user_input = self.read_text('要求.md')
+        else:
+            (self.book_output_dir / '要求.md').write_text(user_input, encoding='utf-8')
+            self.user_input = user_input
 
     def generate_settings(self):
         '''生成设定集文件'''
@@ -259,7 +265,7 @@ class NovelGenerator:
         '''运行小说生成流程'''
         # 1. 获取用户输入
         if self.user_input is None and self.book_name is None:
-            self.get_user_input()
+            self.user_input = input('请输入小说生成要求：')
 
         # 2. 生成书名并设置根目录
         if self.book_name is None:
@@ -267,10 +273,7 @@ class NovelGenerator:
 
         self.setup_book_output_dir()
 
-        if self.user_input is not None:
-            (self.book_output_dir / '要求.md').write_text(self.user_input, encoding='utf-8')
-        else:
-            self.user_input = self.read_text('要求.md')
+        self.save_user_input()
 
         # 3. 生成设定集和总纲
         self.generate_settings()
