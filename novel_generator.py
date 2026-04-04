@@ -13,11 +13,12 @@ if TYPE_CHECKING:
 
 
 class NovelGenerator:
-    def __init__(self, model: str, output_dir: str, user_input: str | None = None, book_name: str | None = None):
+    def __init__(self, model: str, output_dir: str, inspect_times: int, user_input: str | None = None, book_name: str | None = None):
         self.chat = u.get_chat(model)
         self.output_dir = Path(output_dir)
         self.user_input = user_input
         self.book_name = book_name
+        self.inspect_times = inspect_times
 
     def exists(self, path_name: str) -> bool:
         '''检查文件是否存在'''
@@ -42,7 +43,7 @@ class NovelGenerator:
         print()
         return content.strip()
 
-    def generate_file(self, path_name: str, messages: list[Message], inspect_times: int = 2):
+    def generate_file(self, path_name: str, messages: list[Message]):
         '''生成文件'''
         path = self.book_output_dir / path_name
         if path.exists():
@@ -55,6 +56,7 @@ class NovelGenerator:
         path.parent.mkdir(parents=True, exist_ok=True)
         settings_content = self.read_text('设定集.md')
         fix_messages: list[Message] = []
+        inspect_times = self.inspect_times
         while True:
             stream = self.chat(
                 messages=messages+fix_messages+output_messages)
@@ -302,12 +304,15 @@ if __name__ == '__main__':
     parser.add_argument('--user-input', '-i', type=str, help='小说生成要求')
     parser.add_argument('--output-dir', '-o', type=str,
                         default='./dist/', help='输出目录路径')
+    parser.add_argument('--inspect-times', '-t', type=int, default=3,
+                        help='检查次数')
     args = parser.parse_args()
 
     # 初始化生成器
     generator = NovelGenerator(
         model=args.model,
         output_dir=args.output_dir,
+        inspect_times=args.inspect_times,
         user_input=args.user_input,
         book_name=args.book_name,
     )
