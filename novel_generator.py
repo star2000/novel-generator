@@ -68,11 +68,15 @@ class NovelGenerator:
                     content += chunk.message.content
                     print(chunk.message.content, end='', flush=True)
             print('='*80)
-            if check_times <= 0:
-                break
             check = ''
-            if not settings_content:
-                check = input(f'{path_name} 应该如何调整：')
+            if check_times <= 0:
+                if not settings_content:
+                    check = input(f'{path_name} 修改建议：')
+                    if not check:
+                        break
+                    check_times = 1
+                else:
+                    break
             if not check:
                 check_times -= 1
                 check = self.generate(f'检查 {path_name}', [
