@@ -120,15 +120,15 @@ class NovelGenerator:
         settings_content = self.read_text('设定集.md')
 
         self.generate_file('总纲.md', [
-            {'role': 'system', 'content': '你是一个专业的小说作者，根据用户的输入，生成小说的总纲，要有一句话讲清楚故事卖点的核心梗，然后定义主线脉络，并划分大卷，每卷设定具体的字数目标和完结节点。在第一卷的开头专门设计黄金三章的起承转合（切入冲突、抛出悬念、确立期待）。'},
+            {'role': 'system', 'content': '你是一个专业的小说作者，根据用户的输入，生成小说的总纲，要有一句话讲清楚故事卖点的核心梗，然后定义主线脉络，并划分大卷，每卷设定具体的字数目标和完结节点。每卷的开头专门设计黄金三章的起承转合（切入冲突、抛出悬念、确立期待）。每卷的章节号分别从1开始。'},
             {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}'}
         ], 3)
 
     def generate_total_part_num(self):
         '''根据总纲生成总卷数'''
         outline_content = self.read_text('总纲.md')
-        return int(self.generate('生成最大卷数', [
-            {'role': 'system', 'content': '你是一个小说卷数计数器，根据总纲，仅输出阿拉伯数字格式的最大卷数，不包含任何额外的内容和符号。'},
+        return int(self.generate('生成总卷数', [
+            {'role': 'system', 'content': '你是一个小说卷数计数器，根据总纲，仅输出阿拉伯数字格式的总卷数，不包含任何额外的内容和符号。'},
             {'role': 'user', 'content': outline_content}
         ]))
 
@@ -151,15 +151,16 @@ class NovelGenerator:
         settings_content = self.read_text('设定集.md')
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
-            {'role': 'system', 'content': '你是一个专业的热门高质量网络小说作家，写卷大纲，要有结构规划与节奏把控，结构规划要确保留存率，细化大纲，每章设计“钩子”（结尾悬念）。节奏把控要考虑“期待值管理”：“憋屈 - 爆发”的循环不要超过三章。最好是“小冲突（被骚扰） -> 心理博弈 -> 快速反杀 -> 嘲讽反派”。让读者在压抑后立刻得到释放。'},
+            {'role': 'system', 'content': '你是一个专业的热门高质量网络小说作家，写卷大纲，要有结构规划与节奏把控，结构规划要确保留存率，细化大纲，每章设计“钩子”（结尾悬念）。节奏把控要考虑“期待值管理”：“憋屈 - 爆发”的循环不要超过三章。最好是“小冲突（被骚扰） -> 心理博弈 -> 快速反杀 -> 嘲讽反派”。让读者在压抑后立刻得到释放。每卷的章节号从1开始。'},
             {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}'}
         ], 2)
 
     def generate_total_chapter_num(self, part_name: str) -> int:
         '''根据卷大纲生成该卷的章数'''
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        return int(self.generate(f'生成{part_name}的最大章数', [
-            {'role': 'system', 'content': '你是一个小说章数计数器，根据卷大纲，仅输出阿拉伯数字格式的最大章数，不包含任何额外的内容和符号。'},
+        return int(self.generate(f'生成{part_name}的章节数量', [
+            {'role': 'system',
+                'content': '你是一个小说章数计数器，根据卷大纲，仅输出阿拉伯数字格式的章节数量，不包含任何额外的内容和符号。'},
             {'role': 'user', 'content': part_outline_content}
         ]))
 
