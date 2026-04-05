@@ -131,7 +131,7 @@ class NovelGenerator:
         outline_content = self.read_text('总纲.md')
         parts_str = self.generate_file('卷名.jsonl', [
             {'role': 'system',
-                'content': '你是一个卷名生成器，输出格式每行为{"num": int, "name": str, "desc": str}'},
+                'content': '你是一个卷名生成器，输出格式每行为{"num": int, "name": str}，名字要精简优雅不重复'},
             {'role': 'user', 'content': outline_content}
         ])
         parts = sorted(
@@ -152,9 +152,9 @@ class NovelGenerator:
     def generate_chapter_names(self, part_name: str):
         '''生成章节名列表'''
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        chapters_str = self.generate_file('章名.jsonl', [
+        chapters_str = self.generate_file(f'{part_name}/章名.jsonl', [
             {'role': 'system',
-                'content': '你是一个章名生成器，输出格式每行为{"num": int, "name": str, "desc": str}'},
+                'content': '你是一个章名生成器，输出格式每行为{"num": int, "name": str}，名字要精简优雅不重复'},
             {'role': 'user', 'content': part_outline_content}
         ])
         chapters = sorted(
