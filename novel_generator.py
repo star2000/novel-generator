@@ -43,7 +43,7 @@ class NovelGenerator:
         print()
         return content.strip()
 
-    def generate_file(self, path_name: str, messages: list[Message], check_times: int = 0):
+    def generate_file(self, path_name: str, messages: list[Message]):
         '''生成文件'''
         path = self.book_output_dir / path_name
         if path.exists():
@@ -54,35 +54,16 @@ class NovelGenerator:
             'content': f'请只用中文生成 {path_name} 的内容'
         }]
         path.parent.mkdir(parents=True, exist_ok=True)
-        settings_content = self.read_text('设定集.md')
-        fix_messages: list[Message] = []
-        while True:
-            stream = self.chat(
-                messages=messages+fix_messages+output_messages)
-            print('='*80)
-            print(f'生成 {path_name}：')
-            content = ''
-            for chunk in stream:
-                if chunk.message.content:
-                    content += chunk.message.content
-                    print(chunk.message.content, end='', flush=True)
-            print('\n'+('='*80))
-            if check_times <= 0:
-                break
-            check_times -= 1
-            check = self.generate(f'检查 {path_name}', [
-                {'role': 'system',
-                    'content': '你是一个资深的热门网络小说读者，检查用户输入是否合理'},
-                {'role': 'user',
-                    'content': f'{settings_content or self.user_input}\n\n{path_name}：{content}'}
-            ])
-            fix_messages = [{
-                'role': 'assistant',
-                'content': content
-            }, {
-                'role': 'user',
-                'content': f'{check}\n\n请重新生成'
-            }]
+        stream = self.chat(
+            messages=messages+output_messages)
+        print('='*80)
+        print(f'生成 {path_name}：')
+        content = ''
+        for chunk in stream:
+            if chunk.message.content:
+                content += chunk.message.content
+                print(chunk.message.content, end='', flush=True)
+        print('\n'+('='*80))
         path.write_text(content, encoding='utf-8')
         print(f'{path_name} 生成完成')
         return content
@@ -124,7 +105,7 @@ class NovelGenerator:
         self.generate_file('总纲.md', [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家，根据用户的输入，生成小说的总纲，要有一句话讲清楚故事卖点的核心梗，然后定义主线脉络，并划分大卷，每卷设定具体的字数目标和完结节点。'},
             {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}'}
-        ], 3)
+        ])
 
     def generate_part_names(self):
         '''生成卷名列表'''
@@ -147,7 +128,7 @@ class NovelGenerator:
         self.generate_file(path_name, [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家，写卷大纲，要有结构规划与节奏把控，结构规划要确保留存率，细化大纲，每章设计“钩子”（结尾悬念）。节奏把控要考虑“期待值管理”：“憋屈 - 爆发”的循环不要超过三章。最好是“小冲突（被骚扰） -> 心理博弈 -> 快速反杀 -> 嘲讽反派”。让读者在压抑后立刻得到释放。每卷的章节号从1开始重新编号。'},
             {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}'}
-        ], 2)
+        ])
 
     def generate_chapter_names(self, part_name: str):
         '''生成章节名列表'''
@@ -193,7 +174,7 @@ class NovelGenerator:
             {'role': 'system',
                 'content': '你是一位专业的热门高质量网络小说作家，写章节大纲，要屏蔽内心审查，关闭“逻辑纠错器”和“修辞美化器”。允许自己写出粗糙的草稿，只要它能连贯地讲述故事。展示而非告知：这是铁律。你不写“他很生气”，你只写“他摔碎了杯子，指关节泛白”。所有的情绪和背景信息，必须通过动作、环境、感官细节来呈现，绝不直接陈述。保持语势一致：根据场景切换调整叙事节奏。紧张时句子短促有力，抒情时句子绵长舒缓，但绝不为了炫技而破坏故事的沉浸感。'},
             {'role': 'user', 'content': f'{settings_content}\n\n{prev_content}\n\n{part_outline_content}'}
-        ], 1)
+        ])
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
         '''生成章节正文文件'''
