@@ -142,7 +142,7 @@ class NovelGenerator:
                 {'role': 'system', 'content': '你是一个专业的小说卷名提取器，根据总纲提取该卷的名称。仅输出卷名，不包含卷号'},
                 {'role': 'user', 'content': f'{outline_content}\n\n输出第{part_num}卷的卷名，不包含卷号或第几卷：'}
             ])
-            if '\n' not in part_name:
+            if '\n' not in part_name and '卷' not in part_name:
                 break
         return f'第{part_num}卷-{part_name}'
 
@@ -177,7 +177,7 @@ class NovelGenerator:
                 {'role': 'system', 'content': '你是一个专业的小说章节名提取器，根据卷大纲提取该章节的名称。仅输出章节名，不包含章节号'},
                 {'role': 'user', 'content': f'{part_outline_content}\n\n输出第{chapter_num}章的章节名，不包含章节号或第几章：'}
             ])
-            if '\n' not in chapter_name:
+            if '\n' not in chapter_name and '章' not in chapter_name:
                 break
         return f'第{chapter_num}章-{chapter_name}'
 
