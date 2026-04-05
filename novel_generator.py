@@ -117,7 +117,8 @@ class NovelGenerator:
         ])
         parts = sorted(
             (json.loads(l) for l in parts_str.splitlines() if not l.startswith('```')), key=lambda x: x['num'])
-        part_names = [f"第{i}卷-{part['name']}" for i, part in enumerate(parts)]
+        part_names = [f"第{i}卷-{part['name']}"
+                      for i, part in enumerate(parts, 1)]
         return part_names
 
     def generate_part_outline(self, part_name):
@@ -140,8 +141,8 @@ class NovelGenerator:
         ])
         chapters = sorted(
             (json.loads(l) for l in chapters_str.splitlines() if not l.startswith('```')), key=lambda x: x['num'])
-        chapter_names = [
-            f"第{i}章-{chapter['name']}" for i, chapter in enumerate(chapters, 1)]
+        chapter_names = [f"第{i}章-{chapter['name']}"
+                         for i, chapter in enumerate(chapters, 1)]
         return chapter_names
 
     def get_prev_chapter_dir(self, part_name: str, chapter_name: str) -> Path | None:
