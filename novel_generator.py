@@ -104,7 +104,7 @@ class NovelGenerator:
 
         self.generate_file('总纲.md', [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
-            {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n先写整本书的起承转合，然后划分大卷，写每卷的起承转合。'}
+            {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n先写整本书的起承转合，然后划分大卷，写每卷的起承转合，并规划章节数量'}
         ])
 
     def generate_part_names(self):
