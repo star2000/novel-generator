@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -42,12 +43,12 @@ class NovelGenerator:
         print()
         return content.strip()
 
-    def generate_file(self, path_name: str, messages: list[Message], check_times: int):
+    def generate_file(self, path_name: str, messages: list[Message], check_times: int = 0):
         '''生成文件'''
         path = self.book_output_dir / path_name
         if path.exists():
             print(f'{path_name} 已存在，跳过生成')
-            return
+            return path.read_text(encoding='utf-8')
         output_messages = [{
             'role': 'user',
             'content': f'请只用中文生成 {path_name} 的内容'
@@ -84,6 +85,7 @@ class NovelGenerator:
             }]
         path.write_text(content, encoding='utf-8')
         print(f'{path_name} 生成完成')
+        return content
 
     def generate_book_name(self):
         '''根据用户要求生成书名'''
@@ -124,33 +126,22 @@ class NovelGenerator:
             {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}'}
         ], 3)
 
-    def generate_total_part_num(self):
-        '''根据总纲生成总卷数'''
+    def generate_part_names(self):
+        '''生成卷名列表'''
         outline_content = self.read_text('总纲.md')
-        return int(self.generate('生成总卷数', [
-            {'role': 'system', 'content': '你是一个小说卷数计数器，根据总纲，仅输出阿拉伯数字格式的总卷数，不包含任何额外的内容和符号。'},
+        parts_str = self.generate_file('卷名.jsonl', [
+            {'role': 'system',
+                'content': '你是一个卷名生成器，输出格式每行为{"num": int, "name": str, "desc": str}'},
             {'role': 'user', 'content': outline_content}
-        ]))
-
-    def generate_part_name(self, part_num: int) -> str:
-        '''根据卷号生成卷名'''
-        if dir := next(self.book_output_dir.glob(f'第{part_num}卷-*'), None):
-            return dir.name
-        outline_content = self.read_text('总纲.md')
-        while True:
-            part_name = self.generate(f'提取第{part_num}卷-卷名', [
-                {'role': 'system', 'content': '你是一个专业的小说卷名提取器，根据总纲提取该卷的名称。仅输出卷名，不包含卷号'},
-                {'role': 'user', 'content': f'{outline_content}\n\n输出第{part_num}卷的卷名，不包含卷号或第几卷：'}
-            ])
-            if '\n' not in part_name and '卷' not in part_name:
-                break
-        return f'第{part_num}卷-{part_name}'
+        ])
+        parts = sorted(
+            (json.loads(i) for i in parts_str.splitlines()), key=lambda x: x['num'])
+        part_names = [f"第{part['num']}卷-{part['name']}" for part in parts]
+        return part_names
 
     def generate_part_outline(self, part_name):
         '''生成卷大纲文件'''
         path_name = f'{part_name}/大纲.md'
-        if self.exists(path_name):
-            return
         settings_content = self.read_text('设定集.md')
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
@@ -158,28 +149,19 @@ class NovelGenerator:
             {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}'}
         ], 2)
 
-    def generate_total_chapter_num(self, part_name: str) -> int:
-        '''根据卷大纲生成该卷的章数'''
+    def generate_chapter_names(self, part_name: str):
+        '''生成章节名列表'''
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        return int(self.generate(f'生成{part_name}的章节数量', [
+        chapters_str = self.generate_file('章名.jsonl', [
             {'role': 'system',
-                'content': '你是一个小说章数计数器，根据卷大纲，仅输出阿拉伯数字格式的章节数量，不包含任何额外的内容和符号。'},
+                'content': '你是一个章名生成器，输出格式每行为{"num": int, "name": str, "desc": str}'},
             {'role': 'user', 'content': part_outline_content}
-        ]))
-
-    def generate_chapter_name(self, part_name: str, chapter_num: int) -> str:
-        '''根据章节号生成章节名'''
-        if dir := next(self.book_output_dir.glob(f'{part_name}/第{chapter_num}章-*'), None):
-            return dir.name
-        part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        while True:
-            chapter_name = self.generate(f'提取第{chapter_num}章-章节名', [
-                {'role': 'system', 'content': '你是一个专业的小说章节名提取器，根据卷大纲提取该章节的名称。仅输出章节名，不包含章节号'},
-                {'role': 'user', 'content': f'{part_outline_content}\n\n输出第{chapter_num}章的章节名，不包含章节号或第几章：'}
-            ])
-            if '\n' not in chapter_name and '章' not in chapter_name:
-                break
-        return f'第{chapter_num}章-{chapter_name}'
+        ])
+        chapters = sorted(
+            (json.loads(i) for i in chapters_str.splitlines()), key=lambda x: x['num'])
+        chapter_names = [
+            f"第{chapter['num']}章-{chapter['name']}" for chapter in chapters]
+        return chapter_names
 
     def get_prev_chapter_dir(self, part_name: str, chapter_name: str) -> Path | None:
         '''获取前一章的目录'''
@@ -223,7 +205,7 @@ class NovelGenerator:
             self.generate_file(path_name, [
                 {'role': 'system', 'content': '你是一个专业的热门高质量网络小说作家，写章节正文，要给章节大纲注入血肉和灵魂。**对话重构**：删除那些信息重复的对话。让人物说话像真人，带有各自的语气、口头禅和潜台词。**感官扩容**：补充视觉、听觉、嗅觉、触觉、味觉的描述，让环境变得可感知。**节奏微调**：调整段落长短，制造呼吸感。在读者情绪最紧绷的地方暂停，在最需要放松的地方推进。'},
                 {'role': 'user', 'content': f'{settings_content}\n\n{chapter_outline_content}'}
-            ], 0)
+            ])
         content = (self.book_output_dir /
                    path_name).read_text(encoding='utf-8')
         cleaned_path = self.book_output_dir / path_name.replace('.md', '.txt')
@@ -275,32 +257,19 @@ class NovelGenerator:
         # 3. 生成设定集和总纲
         self.generate_settings()
         self.generate_outline()
-        total_part_num = self.generate_total_part_num()
 
         # 4. 开始生成各卷内容
-        part_num = 1
-        while part_num <= total_part_num:
-            # 生成卷名
-            part_name = self.generate_part_name(part_num)
-
+        for part_name in self.generate_part_names():
             # 创建卷大纲
             self.generate_part_outline(part_name)
-            total_chapter_num = self.generate_total_chapter_num(part_name)
 
             # 生成章节
-            chapter_num = 1
-            while chapter_num <= total_chapter_num:
-                chapter_name = self.generate_chapter_name(
-                    part_name, chapter_num)
+            for chapter_name in self.generate_chapter_names(part_name):
                 # 生成章节大纲
                 self.generate_chapter_outline(part_name, chapter_name)
 
                 # 生成章节正文
                 self.generate_chapter_content(part_name, chapter_name)
-
-                chapter_num += 1
-
-            part_num += 1
 
         print(f'小说《{self.book_name}》生成完成')
 
