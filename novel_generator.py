@@ -94,7 +94,7 @@ class NovelGenerator:
     def generate_settings(self):
         '''生成设定集文件'''
         self.generate_file('设定集.md', [
-            {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家，写设定集，要将模糊的灵感转化为可执行的商业蓝图，分析灵感核心，提炼出“爽点”和“期待感”，并构建世界观设定（力量体系、社会阶级、金手指机制）、人物小传（主角人设、主要配角、反派设计（需有智商和魅力））'},
+            {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
             {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}'}
         ])
 
@@ -103,8 +103,8 @@ class NovelGenerator:
         settings_content = self.read_text('设定集.md')
 
         self.generate_file('总纲.md', [
-            {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家，根据用户的输入，生成小说的总纲，要有一句话讲清楚故事卖点的核心梗，然后定义主线脉络，并划分大卷，每卷设定具体的字数目标和完结节点。'},
-            {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}'}
+            {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
+            {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n先写整本书的起承转合，然后划分大卷，写每卷的起承转合。'}
         ])
 
     def generate_part_names(self):
@@ -116,8 +116,8 @@ class NovelGenerator:
             {'role': 'user', 'content': outline_content}
         ])
         parts = sorted(
-            (json.loads(i) for i in parts_str.splitlines()), key=lambda x: x['num'])
-        part_names = [f"第{part['num']}卷-{part['name']}" for part in parts]
+            (json.loads(l) for l in parts_str.splitlines()), key=lambda x: x['num'])
+        part_names = [f"第{i}卷-{part['name']}" for i, part in enumerate(parts)]
         return part_names
 
     def generate_part_outline(self, part_name):
@@ -126,8 +126,8 @@ class NovelGenerator:
         settings_content = self.read_text('设定集.md')
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
-            {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家，写卷大纲，要有结构规划与节奏把控，结构规划要确保留存率，细化大纲，每章设计“钩子”（结尾悬念）。节奏把控要考虑“期待值管理”：“憋屈 - 爆发”的循环不要超过三章。最好是“小冲突（被骚扰） -> 心理博弈 -> 快速反杀 -> 嘲讽反派”。让读者在压抑后立刻得到释放。每卷的章节号从1开始重新编号。'},
-            {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}'}
+            {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
+            {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}\n\n写本卷的起承转合，然后划分章，写每章的起承转合。'}
         ])
 
     def generate_chapter_names(self, part_name: str):
@@ -139,9 +139,9 @@ class NovelGenerator:
             {'role': 'user', 'content': part_outline_content}
         ])
         chapters = sorted(
-            (json.loads(i) for i in chapters_str.splitlines()), key=lambda x: x['num'])
+            (json.loads(l) for l in chapters_str.splitlines()), key=lambda x: x['num'])
         chapter_names = [
-            f"第{chapter['num']}章-{chapter['name']}" for chapter in chapters]
+            f"第{i}章-{chapter['name']}" for i, chapter in enumerate(chapters, 1)]
         return chapter_names
 
     def get_prev_chapter_dir(self, part_name: str, chapter_name: str) -> Path | None:
@@ -172,8 +172,8 @@ class NovelGenerator:
                 prev_content += f'\n\n{prev_chapter_outline_content}'
         self.generate_file(path_name, [
             {'role': 'system',
-                'content': '你是一位专业的热门高质量网络小说作家，写章节大纲，要屏蔽内心审查，关闭“逻辑纠错器”和“修辞美化器”。允许自己写出粗糙的草稿，只要它能连贯地讲述故事。展示而非告知：这是铁律。你不写“他很生气”，你只写“他摔碎了杯子，指关节泛白”。所有的情绪和背景信息，必须通过动作、环境、感官细节来呈现，绝不直接陈述。保持语势一致：根据场景切换调整叙事节奏。紧张时句子短促有力，抒情时句子绵长舒缓，但绝不为了炫技而破坏故事的沉浸感。'},
-            {'role': 'user', 'content': f'{settings_content}\n\n{prev_content}\n\n{part_outline_content}'}
+                'content': '你是一位专业的热门高质量网络小说作家'},
+            {'role': 'user', 'content': f'{settings_content}\n\n{prev_content}\n\n{part_outline_content}\n\n先写本章的起承转合，然后划分节，写每节的起承转合。'}
         ])
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
@@ -184,7 +184,7 @@ class NovelGenerator:
             chapter_outline_content = self.read_text(
                 f'{part_name}/{chapter_name}/大纲.md')
             self.generate_file(path_name, [
-                {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家，写章节正文，要给章节大纲注入血肉和灵魂。**对话重构**：删除那些信息重复的对话。让人物说话像真人，带有各自的语气、口头禅和潜台词。**感官扩容**：补充视觉、听觉、嗅觉、触觉、味觉的描述，让环境变得可感知。**节奏微调**：调整段落长短，制造呼吸感。在读者情绪最紧绷的地方暂停，在最需要放松的地方推进。'},
+                {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
                 {'role': 'user', 'content': f'{settings_content}\n\n{chapter_outline_content}'}
             ])
         content = (self.book_output_dir /
