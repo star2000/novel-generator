@@ -116,7 +116,7 @@ class NovelGenerator:
             {'role': 'user', 'content': outline_content}
         ])
         parts = sorted(
-            (json.loads(l) for l in parts_str.splitlines()), key=lambda x: x['num'])
+            (json.loads(l) for l in parts_str.splitlines() if not l.startswith('```')), key=lambda x: x['num'])
         part_names = [f"第{i}卷-{part['name']}" for i, part in enumerate(parts)]
         return part_names
 
@@ -139,7 +139,7 @@ class NovelGenerator:
             {'role': 'user', 'content': part_outline_content}
         ])
         chapters = sorted(
-            (json.loads(l) for l in chapters_str.splitlines()), key=lambda x: x['num'])
+            (json.loads(l) for l in chapters_str.splitlines() if not l.startswith('```')), key=lambda x: x['num'])
         chapter_names = [
             f"第{i}章-{chapter['name']}" for i, chapter in enumerate(chapters, 1)]
         return chapter_names
