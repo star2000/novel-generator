@@ -137,10 +137,13 @@ class NovelGenerator:
         if dir := next(self.book_output_dir.glob(f'第{part_num}卷-*'), None):
             return dir.name
         outline_content = self.read_text('总纲.md')
-        part_name = self.generate(f'提取第{part_num}卷-卷名', [
-            {'role': 'system', 'content': '你是一个专业的小说卷名提取器，根据总纲提取该卷的名称。仅输出卷名，不包含卷号'},
-            {'role': 'user', 'content': f'{outline_content}\n\n输出第{part_num}卷的卷名，不包含卷号或第几卷：'}
-        ])
+        while True:
+            part_name = self.generate(f'提取第{part_num}卷-卷名', [
+                {'role': 'system', 'content': '你是一个专业的小说卷名提取器，根据总纲提取该卷的名称。仅输出卷名，不包含卷号'},
+                {'role': 'user', 'content': f'{outline_content}\n\n输出第{part_num}卷的卷名，不包含卷号或第几卷：'}
+            ])
+            if '\n' not in part_name:
+                break
         return f'第{part_num}卷-{part_name}'
 
     def generate_part_outline(self, part_name):
@@ -169,10 +172,13 @@ class NovelGenerator:
         if dir := next(self.book_output_dir.glob(f'{part_name}/第{chapter_num}章-*'), None):
             return dir.name
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        chapter_name = self.generate(f'提取第{chapter_num}章-章节名', [
-            {'role': 'system', 'content': '你是一个专业的小说章节名提取器，根据卷大纲提取该章节的名称。仅输出章节名，不包含章节号'},
-            {'role': 'user', 'content': f'{part_outline_content}\n\n输出第{chapter_num}章的章节名，不包含章节号或第几章：'}
-        ])
+        while True:
+            chapter_name = self.generate(f'提取第{chapter_num}章-章节名', [
+                {'role': 'system', 'content': '你是一个专业的小说章节名提取器，根据卷大纲提取该章节的名称。仅输出章节名，不包含章节号'},
+                {'role': 'user', 'content': f'{part_outline_content}\n\n输出第{chapter_num}章的章节名，不包含章节号或第几章：'}
+            ])
+            if '\n' not in chapter_name:
+                break
         return f'第{chapter_num}章-{chapter_name}'
 
     def get_prev_chapter_dir(self, part_name: str, chapter_name: str) -> Path | None:
