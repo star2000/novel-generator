@@ -1,6 +1,7 @@
 FROM qwen3.5:4b
 
 PARAMETER num_ctx 32768
+PARAMETER repeat_last_n -1
 
 TEMPLATE """{{ if .System }}<|im_start|>system
 {{ .System }}<|im_end|>
