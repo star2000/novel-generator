@@ -141,7 +141,7 @@ class NovelGenerator:
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
-            {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}\n\n写本卷总的起承转合，然后划分几大部分，写每部分的起承转合。'}
+            {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}\n\n写本卷总的起承转合，然后划分十几个中级部分，写每部分的起承转合，和章节规划，每部分最多三章。'}
         ])
 
     def generate_chapter_names(self, part_name: str):
