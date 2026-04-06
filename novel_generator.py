@@ -104,7 +104,7 @@ class NovelGenerator:
 
         self.generate_file('总纲.md', [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
-            {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n先写整本书的起承转合，然后划分大卷，写每卷的起承转合，并规划章节数量'}
+            {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n先写整本书的起承转合，然后划分大卷，写每卷的起承转合'}
         ])
 
     def generate_part_names(self):
@@ -112,7 +112,7 @@ class NovelGenerator:
         outline_content = self.read_text('总纲.md')
         parts_str = self.generate_file('卷名.jsonl', [
             {'role': 'system',
-                'content': '你是一个卷名生成器，输出格式每行为{"num": int, "name": str}，名字要精简优雅不重复'},
+                'content': '你是一个大卷卷名生成器，输出格式每行为{"num": str, "name": str}，名字要精简优雅不重复'},
             {'role': 'user', 'content': outline_content}
         ])
         parts = sorted(
@@ -128,7 +128,7 @@ class NovelGenerator:
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
-            {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}\n\n写本卷的起承转合，然后划分章，写每章的起承转合。'}
+            {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}\n\n写本卷总的起承转合，然后划分为至少十个部分，每部分最多三章，并写每部分的起承转合。'}
         ])
 
     def generate_chapter_names(self, part_name: str):
@@ -136,7 +136,7 @@ class NovelGenerator:
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
         chapters_str = self.generate_file(f'{part_name}/章名.jsonl', [
             {'role': 'system',
-                'content': '你是一个章名生成器，输出格式每行为{"num": int, "name": str}，名字要精简优雅不重复'},
+                'content': '你是一个章节章名生成器，输出格式每行为{"num": str, "name": str}，名字要精简优雅不重复'},
             {'role': 'user', 'content': part_outline_content}
         ])
         chapters = sorted(
@@ -174,7 +174,7 @@ class NovelGenerator:
         self.generate_file(path_name, [
             {'role': 'system',
                 'content': '你是一位专业的热门高质量网络小说作家'},
-            {'role': 'user', 'content': f'{settings_content}\n\n{prev_content}\n\n{part_outline_content}\n\n先写本章的起承转合，然后划分节，写每节的起承转合。'}
+            {'role': 'user', 'content': f'{settings_content}\n\n{prev_content}\n\n{part_outline_content}\n\n先写本章总的起承转合，然后划分为几个小节，写每小节的起承转合。'}
         ])
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
