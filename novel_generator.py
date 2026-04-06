@@ -117,7 +117,7 @@ class NovelGenerator:
 
 {settings_content}
 
-写总纲，起承转合的每一阶段都要细分成多个大卷'''}
+写总纲，要按起承转合的结构来写，其中的每一阶段都要细分成多个大卷'''}
         ])
 
     def generate_part_names(self):
@@ -146,7 +146,7 @@ class NovelGenerator:
 
 {outline_content}
 
-写卷大纲，起承转合的每一阶段都要细分成多个章节'''}
+写卷大纲，要按起承转合的结构来写，其中的每一阶段都要细分成多个剧情单元，每个剧情单元要有描述和章节数量规划'''}
         ])
 
     def generate_chapter_names(self, part_name: str):
@@ -199,7 +199,7 @@ class NovelGenerator:
 
 {part_outline_content}
 
-写章节大纲，起承转合的每一阶段都要细分成多个小节'''}
+写章节大纲，要按起承转合的结构来写，其中的每一阶段都要细分成多个小节'''}
         ])
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
