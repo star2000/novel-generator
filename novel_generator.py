@@ -100,7 +100,7 @@ class NovelGenerator:
 
 要求：{self.user_input}
 
-设定集的目标是，设定全书遵循的基石
+写设定集，需要定义起承转合之外的所有方面
 '''}
         ])
 
@@ -117,7 +117,7 @@ class NovelGenerator:
 
 {settings_content}
 
-先写整本书的起承转合，然后划分大卷，写每卷的起承转合'''}
+写总纲，需要先写整本书的起承转合，然后划分有几大卷，写每卷里的起承转合'''}
         ])
 
     def generate_part_names(self):
