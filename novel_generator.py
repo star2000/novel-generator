@@ -95,7 +95,31 @@ class NovelGenerator:
         '''生成设定集文件'''
         self.generate_file('设定集.md', [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
-            {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}'}
+            {'role': 'user', 'content': f'''\
+《{self.book_name}》
+
+要求：{self.user_input}
+
+以下是编写网络热门小说的设定集时必须关注的核心维度：
+
+### 1. 核心冲突与世界观底层逻辑
+*   **力量体系的量化与分级**：必须明确界定力量的获取路径、等级划分标准以及跨等级战斗的规则。模糊的战力描述会直接导致读者的期待感缺失。
+*   **世界运行的底层矛盾**：思考世界的核心驱动力是什么。这个矛盾必须贯穿始终，是主角升级的必然推手，而不仅仅是背景板。
+*   **规则的限制性**：任何超自然力量或科技树都应有边界。设定越具体，设定的可信度越高，读者的沉浸感越强。
+
+### 2. 人物关系网的动态结构
+网络文学的人物关系通常是剧情推进的核心引擎，而非静态标签。
+*   **关系网的层级与利益链**：明确主角与其他核心角色之间是共生、掠夺、保护还是纯粹的博弈关系。这种关系必须随着剧情推进而动态变化，不能一成不变。
+*   **角色的功能定位**：每个主要角色在故事中承担着什么具体功能？设定需确保这些功能在长篇连载中不会重复    
+或疲劳。
+*   **情感羁绊的“钩子”**：设计至少一条能够贯穿全书的强情感线。在网文语境下，人物情感互动往往比剧情本身更能引发读者的收藏。
+
+### 3. 爽点设计
+设定集必须服务于“快速上头”的阅读体验，这是网络热门小说生存的基础。
+*   **升级路径的可视化**：将抽象的成长具象化。读者需要看到清晰的进度条。
+*   **冲突解决的预期管理**：针对高潮章节，设定集需预先规划好“期待感”的积累方式和“释放”方式。
+
+**总结**：优秀的网络热门小说设定集，不应仅仅是一份背景资料的堆砌，而应是一份**逻辑严密的商业蓝图**。它必须将抽象的世界观转化为具体的爽点，将复杂的人物关系简化为清晰的利益博弈，并确保每一个设定都能服务于“留住读者”这一终极目标。'''}
         ])
 
     def generate_outline(self):
@@ -104,7 +128,14 @@ class NovelGenerator:
 
         self.generate_file('总纲.md', [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
-            {'role': 'user', 'content': f'《{self.book_name}》\n\n要求：{self.user_input}\n\n{settings_content}\n\n先写整本书的起承转合，然后划分大卷，写每卷的起承转合'}
+            {'role': 'user', 'content': f'''\
+《{self.book_name}》
+
+要求：{self.user_input}
+
+{settings_content}
+
+先写整本书的起承转合，然后划分大卷，写每卷的起承转合'''}
         ])
 
     def generate_part_names(self):
@@ -128,7 +159,7 @@ class NovelGenerator:
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
-            {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}\n\n写本卷总的起承转合，然后划分为至少十个部分，每部分最多三章，并写每部分的起承转合。'}
+            {'role': 'user', 'content': f'{settings_content}\n\n{outline_content}\n\n写本卷总的起承转合，然后划分几大部分，写每部分的起承转合。'}
         ])
 
     def generate_chapter_names(self, part_name: str):
