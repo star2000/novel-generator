@@ -131,6 +131,7 @@ class NovelGenerator:
         part_names = [
             f"第{i}卷-{part_name}"
             for i, part_name in enumerate(parts_str.splitlines(), 1)
+            if part_name
         ]
         return part_names
 
@@ -160,6 +161,7 @@ class NovelGenerator:
         chapter_names = [
             f"第{i}卷-{chapter_name}"
             for i, chapter_name in enumerate(chapters_str.splitlines(), 1)
+            if chapter_name
         ]
         return chapter_names
 
