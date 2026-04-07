@@ -71,8 +71,8 @@ class NovelGenerator:
     def generate_book_name(self):
         '''根据用户要求生成书名'''
         self.book_name = self.generate('生成书名', [
-            {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家，根据用户输入，起个书名，仅回答一个书名'},
-            {'role': 'user', 'content': f'{self.user_input}'}
+            {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
+            {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个优雅简介的书名，仅回答一个书名，不使用符号'}
         ])
 
     def setup_book_output_dir(self):
@@ -100,7 +100,7 @@ class NovelGenerator:
 
 要求：{self.user_input}
 
-写设定集，需要定义起承转合之外的所有方面，以及有一定深度的各种人或物的名字和背景设定
+写设定集，需要定义起承转合之外的所有方面，以及有一定深度的各种人、事、物的名字和背景设定
 '''}
         ])
 
@@ -117,7 +117,7 @@ class NovelGenerator:
 
 {settings_content}
 
-写总纲，要按起承转合的结构来写，其中的每一阶段都要细分成多个大卷'''}
+写总纲，要细分成多个大卷，每个大卷按起承转合的结构来写'''}
         ])
 
     def generate_part_names(self):
@@ -146,7 +146,7 @@ class NovelGenerator:
 
 {outline_content}
 
-写卷大纲，要按起承转合的结构来写，其中的每一阶段都要细分成多个剧情单元，每个剧情单元要有描述和章节数量规划'''}
+写卷大纲，要细分成多个剧情单元，每个剧情单元按起承转合的结构来写，剧情单元的每个阶段要有描述和章节数量规划'''}
         ])
 
     def generate_chapter_names(self, part_name: str):
@@ -199,7 +199,7 @@ class NovelGenerator:
 
 {part_outline_content}
 
-写章节大纲，要按起承转合的结构来写，其中的每一阶段都要细分成多个小节'''}
+写章节大纲，要细分成多个小节，每个小节按起承转合的结构来写'''}
         ])
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
