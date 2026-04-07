@@ -123,15 +123,15 @@ class NovelGenerator:
     def generate_part_names(self):
         '''生成卷名列表'''
         outline_content = self.read_text('总纲.md')
-        parts_str = self.generate_file('卷名.jsonl', [
+        parts_str = self.generate_file('卷名.txt', [
             {'role': 'system',
-                'content': '你是一个大卷卷名生成器，输出格式每行为{"num": int, "name": str}，名字要精简优雅不重复'},
+                'content': '你是一个大卷卷名生成器，输出格式为每行一个，名字要精简优雅不重复'},
             {'role': 'user', 'content': outline_content}
         ])
-        parts = sorted(
-            (json.loads(l) for l in parts_str.splitlines() if not l.startswith('```')), key=lambda x: x['num'])
-        part_names = [f"第{i}卷-{part['name']}"
-                      for i, part in enumerate(parts, 1)]
+        part_names = [
+            f"第{i}卷-{part_name}"
+            for i, part_name in enumerate(parts_str.splitlines(), 1)
+        ]
         return part_names
 
     def generate_part_outline(self, part_name):
@@ -152,15 +152,15 @@ class NovelGenerator:
     def generate_chapter_names(self, part_name: str):
         '''生成章节名列表'''
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        chapters_str = self.generate_file(f'{part_name}/章名.jsonl', [
+        chapters_str = self.generate_file(f'{part_name}/章名.txt', [
             {'role': 'system',
-                'content': '你是一个章节章名生成器，输出格式每行为{"num": int, "name": str}，名字要精简优雅不重复'},
+                'content': '你是一个章节章名生成器，输出格式为每行一个，名字要精简优雅不重复'},
             {'role': 'user', 'content': part_outline_content}
         ])
-        chapters = sorted(
-            (json.loads(l) for l in chapters_str.splitlines() if not l.startswith('```')), key=lambda x: x['num'])
-        chapter_names = [f"第{i}章-{chapter['name']}"
-                         for i, chapter in enumerate(chapters, 1)]
+        chapter_names = [
+            f"第{i}卷-{chapter_name}"
+            for i, chapter_name in enumerate(chapters_str.splitlines(), 1)
+        ]
         return chapter_names
 
     def get_prev_chapter_dir(self, part_name: str, chapter_name: str) -> Path | None:
