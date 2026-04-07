@@ -131,7 +131,7 @@ class NovelGenerator:
         part_names = [
             f"第{i}卷-{part_name}"
             for i, part_name in enumerate((
-                n for n in parts_str.splitlines()
+                n.strip('《》') for n in parts_str.splitlines()
                 if n and '卷名' not in n), 1)
         ]
         return part_names
@@ -162,7 +162,7 @@ class NovelGenerator:
         chapter_names = [
             f"第{i}章-{chapter_name}"
             for i, chapter_name in enumerate((
-                n for n in chapters_str.splitlines()
+                n.strip('《》') for n in chapters_str.splitlines()
                 if n and '章名' not in n), 1)
         ]
         return chapter_names
