@@ -159,7 +159,7 @@ class NovelGenerator:
             {'role': 'user', 'content': part_outline_content}
         ])
         chapter_names = [
-            f"第{i}卷-{chapter_name}"
+            f"第{i}章-{chapter_name}"
             for i, chapter_name in enumerate(chapters_str.splitlines(), 1)
             if chapter_name
         ]
