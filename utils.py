@@ -5,7 +5,7 @@ os.environ['NO_PROXY'] = '127.0.0.1,localhost'  # noqa
 import math
 import re
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 from urllib.parse import unquote
 
 import markdown
@@ -28,13 +28,19 @@ class Chat:
         self.model = model
         self.client = ollama.Client()
 
-    def __call__(self, messages: list[dict[str, Any]]) -> Generator[str, None, None]:
+    def __call__(self, messages: list[dict[str, Any]]) -> str:
         num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages))
         stream = self.client.chat(
             self.model, messages, stream=True, think=False, options={'num_ctx': num_ctx})
+        print('='*80)
+        content = ''
         for chunk in stream:
             if chunk.message.content:
-                yield chunk.message.content
+                content += chunk.message.content
+                print(chunk.message.content, end='', flush=True)
+        print()
+        print('='*80)
+        return content
 
 
 def get_chat(model: str):

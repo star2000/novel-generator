@@ -361,16 +361,11 @@ if __name__ == '__main__':
                 is_rename = False
                 while prune_article_title in used_article_title:
                     print(f'{volume_name} {chapter_dir.name} 章节名重复，重新取名：')
-                    stream = chat([
+                    new_article_title = chat([
                         {'role': 'system',
-                            'content': '你是一个资深小说作者，请根据用户输入的章节内容，对章节进行改名，并返回改名后的章节标题'},
+                            'content': '你是一位专业的热门高质量网络小说作家'},
                         {'role': 'user', 'content': f'正文：{article_content}\n\n原名：{prune_article_title}\n\n仅输出简短、优雅，不包含符号的新章节标题：'}
                     ])
-                    new_article_title = ''
-                    for chunk in stream:
-                        new_article_title += chunk
-                        print(chunk, end='', flush=True)
-                    print()
                     prune_article_title = new_article_title.strip()
                     is_rename = True
                 if is_rename:

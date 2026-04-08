@@ -21,15 +21,11 @@ def review_novel(novel_dir: Path):
                 word_num += len(word)
                 word_list.append(word)
     words = '\n'.join(word_list)
-    stream = chat([
+    print(f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价：')
+    chat([
         {'role': 'system', 'content': '你是一个资深的热门网络小说读者'},
         {'role': 'user', 'content': words + '\n\n请对小说的各方面做出评价和评分'},
     ])
-    print('='*80)
-    print(f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价：')
-    for chunk in stream:
-        print(chunk, end='', flush=True)
-    print()
 
 
 if __name__ == '__main__':
