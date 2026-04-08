@@ -4,10 +4,12 @@ dependencies = [
   "beautifulsoup4>=4.14.3",
   "diff-match-patch>=20241021",
   "markdown>=3.10.2",
+  "modelscope>=1.35.3",
   "ollama>=0.6.1",
   "pycnnum>=2.1.1",
   "python-dotenv>=1.2.2",
   "requests>=2.33.0",
+  "transformers>=5.5.0",
 ]
 description = "高质量长篇小说生成器"
 name = "novel-generator"

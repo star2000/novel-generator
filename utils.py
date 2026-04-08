@@ -1,19 +1,44 @@
-import functools
 import os
+
+os.environ['NO_PROXY'] = '127.0.0.1,localhost'  # noqa
+
+import math
 import re
 from pathlib import Path
+from typing import Any, Generator
 from urllib.parse import unquote
 
 import markdown
+import ollama
 from bs4 import BeautifulSoup
 from diff_match_patch import diff_match_patch
+from modelscope import AutoTokenizer
 
-os.environ['NO_PROXY'] = '127.0.0.1,localhost'
+tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
+
+
+def get_num_ctx(text: str) -> int:
+    token_count = len(tokenizer.encode(text))
+    num_ctx = 2**max(15, min(18, math.ceil(math.log2(token_count))))
+    return num_ctx
+
+
+class Chat:
+    def __init__(self, model: str):
+        self.model = model
+        self.client = ollama.Client()
+
+    def __call__(self, messages: list[dict[str, Any]]) -> Generator[str, None, None]:
+        num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages))
+        stream = self.client.chat(
+            self.model, messages, stream=True, think=False, options={'num_ctx': num_ctx})
+        for chunk in stream:
+            if chunk.message.content:
+                yield chunk.message.content
 
 
 def get_chat(model: str):
-    import ollama
-    return functools.partial(ollama.chat, model=model, stream=True, think=False)
+    return Chat(model)
 
 
 dmp = diff_match_patch()

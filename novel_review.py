@@ -1,5 +1,4 @@
 import argparse
-import math
 from pathlib import Path
 
 import utils as u
@@ -22,16 +21,14 @@ def review_novel(novel_dir: Path):
                 word_num += len(word)
                 word_list.append(word)
     words = '\n'.join(word_list)
-    num_ctx = 2**max(15, min(18, math.ceil(math.log2(len(words)))))
-    stream = chat(messages=[
-        {'role': 'system', 'content': '你是一个资深的热门网络小说读者，根据用户输入的小说内容，对各方面做出评价和评分'},
+    stream = chat([
+        {'role': 'system', 'content': '你是一个资深的热门网络小说读者'},
         {'role': 'user', 'content': words + '\n\n请对小说的各方面做出评价和评分'},
-    ], options={'num_ctx': num_ctx})
+    ])
     print('='*80)
     print(f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价：')
     for chunk in stream:
-        if chunk.message.content:
-            print(chunk.message.content, end='', flush=True)
+        print(chunk, end='', flush=True)
     print()
 
 

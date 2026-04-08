@@ -10,10 +10,6 @@
 - 为每个章节生成大纲和正文
 - 支持对生成的小说进行评价
 
-## 注意事项
-
-默认模型使用`qwen3.5:9b`，32k上下文长度，需要8GB显存才能本地高速运行，如果显存不足，换成`qwen3.5:4b`或更小的模型
-
 ## 环境安装步骤
 
 1. [安装uv包管理器](https://docs.astral.sh/uv/getting-started/installation/) 和 [Ollama 本地ai启动器](https://ollama.com/download)

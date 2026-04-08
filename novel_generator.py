@@ -32,14 +32,13 @@ class NovelGenerator:
 
     def generate(self, name: str, messages: list[Message]):
         '''生成内容'''
-        stream = self.chat(messages=messages, stream=True)
+        stream = self.chat(messages)
         print('='*80)
         print(f'{name}：')
         content = ''
         for chunk in stream:
-            if chunk.message.content:
-                content += chunk.message.content
-                print(chunk.message.content, end='', flush=True)
+            content += chunk
+            print(chunk, end='', flush=True)
         print()
         return content.strip()
 
@@ -54,15 +53,13 @@ class NovelGenerator:
             'content': f'请只用中文生成 {path_name} 的内容'
         }]
         path.parent.mkdir(parents=True, exist_ok=True)
-        stream = self.chat(
-            messages=messages+output_messages)
+        stream = self.chat(messages+output_messages)
         print('='*80)
         print(f'生成 {path_name}：')
         content = ''
         for chunk in stream:
-            if chunk.message.content:
-                content += chunk.message.content
-                print(chunk.message.content, end='', flush=True)
+            content += chunk
+            print(chunk, end='', flush=True)
         print('\n'+('='*80))
         path.write_text(content, encoding='utf-8')
         print(f'{path_name} 生成完成')
@@ -226,7 +223,7 @@ class NovelGenerator:
             if cleaned_path.exists():
                 cleaned_content = cleaned_path.read_text(encoding='utf-8')
             else:
-                stream = self.chat(messages=[
+                stream = self.chat([
                     {'role': 'system',
                         'content': '你是一个小说正文洗稿器，正文开头不应该出现第几章第几卷，结尾不应该明说本章完，其余必须保持原样'},
                     {'role': 'user', 'content': content}
@@ -234,9 +231,8 @@ class NovelGenerator:
                 cleaned_content = ''
                 print(f'洗稿 {path_name}')
                 for chunk in stream:
-                    if chunk.message.content:
-                        cleaned_content += chunk.message.content
-                        print(chunk.message.content, end='', flush=True)
+                    cleaned_content += chunk
+                    print(chunk, end='', flush=True)
                 print()
                 cleaned_content = u.markdown_to_text(cleaned_content)
                 cleaned_path.write_text(cleaned_content, encoding='utf-8')
