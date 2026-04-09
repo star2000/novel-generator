@@ -41,12 +41,14 @@ class Chat:
         num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages))
         stream = self.client.chat(
             self.model, messages, stream=True, think=False, options={'num_ctx': num_ctx})
+        is_markdown = title and title.endswith('.md')
         content = ''
         with RichLive(console=console, vertical_overflow='visible') as live:
             for chunk in stream:
                 if chunk.message.content:
                     content += chunk.message.content
-                    live.update(RichPanel(RichMarkdown(content), title=title))
+                    live.update(RichPanel(RichMarkdown(content)
+                                if is_markdown else content, title=title))
         return content.strip()
 
 

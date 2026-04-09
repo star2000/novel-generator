@@ -33,7 +33,7 @@ def review_novel(novel_dir: Path):
     chat([
         {'role': 'system', 'content': '你是一个资深的热门网络小说读者'},
         {'role': 'user', 'content': words + '\n\n请对小说的各方面做出评价和评分'},
-    ], f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价')
+    ], f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价.md')
 
 
 output_dir = Path(args.output_dir)
