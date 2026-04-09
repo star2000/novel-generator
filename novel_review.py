@@ -3,6 +3,15 @@ from pathlib import Path
 
 import utils as u
 
+parser = argparse.ArgumentParser(description='小说评价器')
+parser.add_argument('--model', '-m', type=str, default='qw', help='模型名称')
+parser.add_argument('--output-dir', '-o', type=str,
+                    default='./dist/', help='输出目录路径')
+parser.add_argument('--book-name', '-n', type=str, help='小说书名')
+args = parser.parse_args()
+
+chat = u.get_chat(args.model)
+
 
 def review_novel(novel_dir: Path):
     part_num = 0
@@ -21,28 +30,16 @@ def review_novel(novel_dir: Path):
                 word_num += len(word)
                 word_list.append(word)
     words = '\n'.join(word_list)
-    print(f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价：')
     chat([
         {'role': 'system', 'content': '你是一个资深的热门网络小说读者'},
         {'role': 'user', 'content': words + '\n\n请对小说的各方面做出评价和评分'},
-    ])
+    ], f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价')
 
 
-if __name__ == '__main__':
-    # 解析命令行参数
-    parser = argparse.ArgumentParser(description='小说评价器')
-    parser.add_argument('--model', '-m', type=str, default='qw', help='模型名称')
-    parser.add_argument('--output-dir', '-o', type=str,
-                        default='./dist/', help='输出目录路径')
-    parser.add_argument('--book-name', '-n', type=str, help='小说书名')
-    args = parser.parse_args()
+output_dir = Path(args.output_dir)
 
-    chat = u.get_chat(args.model)
-
-    output_dir = Path(args.output_dir)
-
-    if args.book_name:
-        review_novel(output_dir / args.book_name)
-    else:
-        for novel_dir in output_dir.glob('*/'):
-            review_novel(novel_dir)
+if args.book_name:
+    review_novel(output_dir / args.book_name)
+else:
+    for novel_dir in output_dir.glob('*/'):
+        review_novel(novel_dir)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -30,12 +29,6 @@ class NovelGenerator:
             return ''
         return f'<{path_name}>\n'+(self.book_output_dir / path_name).read_text(encoding='utf-8') + f'\n</{path_name}>'
 
-    def generate(self, name: str, messages: list[Message]):
-        '''生成内容'''
-        print(f'{name}：')
-        content = self.chat(messages)
-        return content.strip()
-
     def generate_file(self, path_name: str, messages: list[Message]):
         '''生成文件'''
         path = self.book_output_dir / path_name
@@ -47,18 +40,16 @@ class NovelGenerator:
             'content': f'请只用中文生成 {path_name} 的内容'
         }]
         path.parent.mkdir(parents=True, exist_ok=True)
-        print(f'生成 {path_name}：')
-        content = self.chat(messages+output_messages)
+        content = self.chat(messages+output_messages, path_name)
         path.write_text(content, encoding='utf-8')
-        print(f'{path_name} 生成完成')
         return content
 
     def generate_book_name(self):
         '''根据用户要求生成书名'''
-        self.book_name = self.generate('生成书名', [
+        self.book_name = self.chat([
             {'role': 'system', 'content': '你是一位专业的热门高质量网络小说作家'},
             {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个热门网络小说名，仅回答一个，不使用符号'}
-        ])
+        ], '生成书名')
 
     def setup_book_output_dir(self):
         '''设置小说根目录'''
@@ -211,12 +202,11 @@ class NovelGenerator:
             if cleaned_path.exists():
                 cleaned_content = cleaned_path.read_text(encoding='utf-8')
             else:
-                print(f'洗稿 {path_name}')
                 cleaned_content = self.chat([
                     {'role': 'system',
                         'content': '你是一个小说正文洗稿器，正文开头不应该出现第几章第几卷，结尾不应该明说本章完，其余必须保持原样'},
                     {'role': 'user', 'content': content}
-                ])
+                ], f'洗稿 {path_name}')
                 cleaned_content = u.markdown_to_text(cleaned_content)
                 cleaned_path.write_text(cleaned_content, encoding='utf-8')
             if only_chapter_name in cleaned_content and only_part_name in cleaned_content:
