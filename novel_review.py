@@ -10,7 +10,7 @@ parser.add_argument('--output-dir', '-o', type=str,
 parser.add_argument('--book-name', '-n', type=str, help='小说书名')
 args = parser.parse_args()
 
-chat = u.get_chat(args.model)
+chat = u.Chat(args.model, '你是一个资深的热门网络小说读者')
 
 
 def review_novel(novel_dir: Path):
@@ -31,7 +31,6 @@ def review_novel(novel_dir: Path):
                 word_list.append(word)
     words = '\n'.join(word_list)
     chat([
-        {'role': 'system', 'content': '你是一个资深的热门网络小说读者'},
         {'role': 'user', 'content': words + '\n\n请对小说的各方面做出评价和评分'},
     ], f'《{novel_dir.name}》 共{part_num}卷{chapter_num}章{word_num}字 评价.md')
 

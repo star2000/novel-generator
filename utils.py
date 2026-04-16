@@ -21,39 +21,45 @@ from rich.traceback import install as rich_traceback_install
 
 console = RichConsole()
 
-rich_traceback_install(console=console, show_locals=True)
+rich_traceback_install(console=console)
 
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
 
 
 def get_num_ctx(text: str) -> int:
     token_count = len(tokenizer.encode(text))
-    num_ctx = 2**max(15, min(18, math.ceil(math.log2(token_count))))
+    num_ctx = 2**max(15, min(18, math.ceil(math.log2(token_count+5000))))
     return num_ctx
 
 
 class Chat:
-    def __init__(self, model: str):
+    def __init__(self, model: str, system_prompt: str | None = None):
         self.model = model
         self.client = ollama.Client()
+        self.system_prompt = system_prompt
 
     def __call__(self, messages: list[dict[str, Any]], title: str | None = None) -> str:
+        if self.system_prompt:
+            messages = [
+                {'role': 'system', 'content': self.system_prompt},
+            ] + messages
         num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages))
         stream = self.client.chat(
-            self.model, messages, stream=True, think=False, options={'num_ctx': num_ctx})
+            self.model, messages, stream=True, think='low', options={'num_ctx': num_ctx})
         is_markdown = title and title.endswith('.md')
         content = ''
+        think_text = ''
         with RichLive(console=console, vertical_overflow='visible') as live:
             for chunk in stream:
-                if chunk.message.content:
+                if chunk.message.thinking:
+                    think_text += chunk.message.thinking
+                    live.update(
+                        RichPanel(RichMarkdown(think_text), title=title))
+                elif chunk.message.content:
                     content += chunk.message.content
                     live.update(RichPanel(RichMarkdown(content)
-                                if is_markdown else content, title=title))
+                                          if is_markdown else content, title=title))
         return content.strip()
-
-
-def get_chat(model: str):
-    return Chat(model)
 
 
 dmp = diff_match_patch()

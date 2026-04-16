@@ -323,7 +323,7 @@ if __name__ == '__main__':
                         default='./dist/', help='输出目录路径')
     args = parser.parse_args()
 
-    chat = u.get_chat(args.model)
+    chat = u.Chat(args.model, '你是一位专业的热门高质量网络小说作家')
     output_dir = Path(args.output_dir)
 
     client = FanQieNovelAuthorClient(os.environ['FANQIE_SESSIONID'])
@@ -361,8 +361,6 @@ if __name__ == '__main__':
                 is_rename = False
                 while prune_article_title in used_article_title:
                     new_article_title = chat([
-                        {'role': 'system',
-                            'content': '你是一位专业的热门高质量网络小说作家'},
                         {'role': 'user', 'content': f'正文：{article_content}\n\n原名：{prune_article_title}\n\n仅输出简短、优雅，不包含符号的新章节标题：'}
                     ], f'{volume_name} {chapter_dir.name} 章节名重复，重新取名')
                     prune_article_title = new_article_title.strip()
