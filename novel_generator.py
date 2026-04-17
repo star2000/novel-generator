@@ -53,7 +53,7 @@ class NovelGenerator:
     def generate_book_name(self):
         '''根据用户要求生成书名'''
         self.book_name = self.chat([
-            {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个热门网络小说名，仅回答一个，不使用符号'}
+            {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个书名，仅回答一个，不使用符号'}
         ], '生成书名')
 
     def setup_book_output_dir(self):
@@ -80,7 +80,7 @@ class NovelGenerator:
 
 要求：{self.user_input}
 
-写设定集，需要定义起承转合和爽点之外的所有方面，要有一定深度的各种人、事、物的名字和背景设定，立住人设，深化情感内核，如果是同人，确保不偏离原著设定
+写设定集，需要定义起承转合和爽点之外的所有方面，要有一定深度的各种人、事、物的名字和背景设定，立住人设，深化情感内核，如果是同人，先写原著设定
 '''}
         ])
 
