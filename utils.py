@@ -84,7 +84,12 @@ class Chat:
             ] + messages
         num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages), 5000)
         stream = self.client.chat(
-            self.model, messages, stream=True, think=think, options={'num_ctx': num_ctx})
+            self.model, messages, stream=True, think=think, options={
+                'num_ctx': num_ctx,
+                'penalty_last_n': -1,
+                'repeat_penalty': 1.5,
+                'frequency_penalty': 0.5,
+            })
         is_markdown = title and title.endswith('.md')
         content = ''
         think_text = ''

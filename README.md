@@ -23,7 +23,7 @@
    ```
 4. 下载模型调参待用：
    ```sh
-   ollama create qw -f qw.Modelfile
+   ollama pull qwen3.5:4b
    ```
 
 ## 基本用法
