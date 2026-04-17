@@ -14,7 +14,12 @@ if TYPE_CHECKING:
 
 class NovelGenerator:
     def __init__(self, model: str, output_dir: str, user_input: str | None = None, book_name: str | None = None):
-        self.chat = u.Chat(model, '你是一位专业的热门高质量网络小说作家，使用起承转合的结构，围绕爽点写小说')
+        self.chat = u.Chat(model, '''\
+你是一位专业的热门高质量网络小说作家，使用起承转合的结构，围绕爽点写小说。
+打破循环：每一章都应该有新的冲突、新的敌人类型或者新的能力应用，避免“套路重复”。
+细化战斗：要有具体的战术描写，能让读者能看到具体是如何战斗的，而不仅仅是描述“意识在博弈”。
+深化配角：给配角赋予复杂的人格，或者让配角在剧情中承担更多关键作用，而不是仅仅作为背景板。
+''')
         self.output_dir = Path(output_dir)
         self.user_input = user_input
         self.book_name = book_name
