@@ -306,7 +306,8 @@ class NovelGenerator:
 if __name__ == '__main__':
     # 解析命令行参数
     parser = argparse.ArgumentParser(description='小说生成器')
-    parser.add_argument('--model', '-m', type=str, default='qw', help='模型名称')
+    parser.add_argument('--model', '-m', type=str,
+                        default='qwen3.5:4b', help='模型名称')
     parser.add_argument('--book-name', '-n', type=str, help='小说书名')
     parser.add_argument('--user-input', '-i', type=str, help='小说生成要求')
     parser.add_argument('--output-dir', '-o', type=str,

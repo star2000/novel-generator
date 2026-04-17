@@ -318,7 +318,8 @@ if __name__ == '__main__':
     load_dotenv()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', '-m', type=str, default='qw', help='模型名称')
+    parser.add_argument('--model', '-m', type=str,
+                        default='qwen3.5:4b', help='模型名称')
     parser.add_argument('--output-dir', '-o', type=str,
                         default='./dist/', help='输出目录路径')
     args = parser.parse_args()
