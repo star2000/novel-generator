@@ -137,6 +137,7 @@ class NovelGenerator:
         '''生成卷大纲文件'''
         path_name = f'{part_name}/大纲.md'
         novel_part_outline = self.get_novel_part_outline()
+        part_names = self.read_text('卷名.txt')
         settings_content = self.read_text('设定集.md')
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
@@ -146,6 +147,8 @@ class NovelGenerator:
 {settings_content}
 
 {outline_content}
+
+{part_names}
 
 写卷大纲，要细分成多个剧情单元，每个剧情单元按起承转合的结构来写，剧情单元的每个阶段要有描述和章节数量规划'''}
         ])
@@ -195,6 +198,7 @@ class NovelGenerator:
         novel_chapter_outline = self.get_novel_chapter_outline()
         settings_content = self.read_text('设定集.md')
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
+        chapter_names = self.read_text(f'{part_name}/章名.txt')
         self.generate_file(path_name, [
             {'role': 'user', 'content': f'''
 {novel_chapter_outline}
@@ -202,6 +206,8 @@ class NovelGenerator:
 {settings_content}
 
 {part_outline_content}
+
+{chapter_names}
 
 写章节大纲，要细分成多个小节，每个小节按起承转合的结构来写'''}
         ])
