@@ -98,6 +98,8 @@ class Chat:
                     content += chunk.message.content
                     live.update(RichPanel(RichTail(RichMarkdown(content)
                                                    if is_markdown else content), title=title))
+            live.update(RichPanel(RichMarkdown(content)
+                                  if is_markdown else content, title=title))
         return content.strip()
 
 
