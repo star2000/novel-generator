@@ -40,7 +40,7 @@ class NovelGenerator:
             return f'<{path_name}>\n' + text + f'\n</{path_name}>'
         return ''
 
-    def generate_file(self, path_name: str, messages: list[Message]):
+    def generate_file(self, path_name: str, messages: list[Message], think: bool = True):
         '''生成文件'''
         path = self.book_output_dir / path_name
         if path.exists():
@@ -51,7 +51,7 @@ class NovelGenerator:
             'content': f'请只用中文生成 {path_name} 的内容'
         }]
         path.parent.mkdir(parents=True, exist_ok=True)
-        content = self.chat(messages+output_messages, path_name)
+        content = self.chat(messages+output_messages, path_name, think=think)
         path.write_text(content, encoding='utf-8')
         return content
 
@@ -59,7 +59,7 @@ class NovelGenerator:
         '''根据用户要求生成书名'''
         self.book_name = self.chat([
             {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个书名，仅回答一个，不使用符号'}
-        ], '生成书名')
+        ], '生成书名', think=True)
 
     def setup_book_output_dir(self):
         '''设置小说根目录'''
@@ -266,7 +266,7 @@ class NovelGenerator:
                     {'role': 'system',
                         'content': '你是一个小说正文洗稿器，正文开头不应该出现第几章第几卷，结尾不应该明说本章完，其余必须保持原样'},
                     {'role': 'user', 'content': content}
-                ], f'洗稿 {path_name}')
+                ], f'洗稿 {path_name}', think=False)
                 cleaned_content = u.markdown_to_text(cleaned_content)
                 cleaned_path.write_text(cleaned_content, encoding='utf-8')
             if only_chapter_name in cleaned_content and only_part_name in cleaned_content:
