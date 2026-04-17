@@ -80,7 +80,7 @@ class NovelGenerator:
 
 要求：{self.user_input}
 
-写设定集，需要定义起承转合之外的所有方面，以及有一定深度的各种人、事、物的名字和背景设定，每部分都要有爽点
+写设定集，需要定义起承转合和爽点之外的所有方面，要有一定深度的各种人、事、物的名字和背景设定，立住人设，深化情感内核，如果是同人，确保不偏离原著设定
 '''}
         ])
 
@@ -96,7 +96,7 @@ class NovelGenerator:
 
 {settings_content}
 
-写总纲，要细分成多个大卷，每个大卷按起承转合的结构来写，每部分都要有爽点'''}
+写总纲，要细分成多个大卷，每个大卷按起承转合的结构来写'''}
         ])
 
     def generate_part_names(self):
@@ -115,18 +115,39 @@ class NovelGenerator:
         ]
         return part_names
 
+    def get_novel_part_outline(self, max_tokens: int = 20000) -> str:
+        contents: list[str] = []
+        tokens = 0
+        parts = u.sorted_subdirs(self.book_output_dir)
+        parts.reverse()
+        for part in parts:
+            f = part / '大纲.md'
+            if f.exists():
+                name = f'{part.name} / 大纲'
+                text = f.read_text(encoding='utf-8')
+                content = f'<{name}>\n' + text + f'\n</{name}>\n'
+                t = u.get_num_ctx(content)
+                if t + tokens > max_tokens:
+                    break
+                contents.insert(0, content)
+                tokens += t
+        return ''.join(contents)
+
     def generate_part_outline(self, part_name):
         '''生成卷大纲文件'''
         path_name = f'{part_name}/大纲.md'
+        novel_part_outline = self.get_novel_part_outline()
         settings_content = self.read_text('设定集.md')
         outline_content = self.read_text('总纲.md')
         self.generate_file(path_name, [
             {'role': 'user', 'content': f'''\
+{novel_part_outline}
+
 {settings_content}
 
 {outline_content}
 
-写卷大纲，要细分成多个剧情单元，每个剧情单元按起承转合的结构来写，剧情单元的每个阶段要有描述和章节数量规划，每部分都要有爽点'''}
+写卷大纲，要细分成多个剧情单元，每个剧情单元按起承转合的结构来写，剧情单元的每个阶段要有描述和章节数量规划'''}
         ])
 
     def generate_chapter_names(self, part_name: str):
@@ -145,41 +166,44 @@ class NovelGenerator:
         ]
         return chapter_names
 
-    def get_prev_chapter_dir(self, part_name: str, chapter_name: str) -> Path | None:
-        '''获取前一章的目录'''
-        part_num = u.get_first_int(part_name)
-        chapter_num = u.get_first_int(chapter_name)
-        if chapter_num == 1:
-            if part_num == 1:
-                return None
-            # 找上一卷的最后一章
-            prev_part_dir = next(
-                self.book_output_dir.glob(f'第{part_num - 1}卷-*/'))
-            prev_chapters = list(
-                (self.book_output_dir / prev_part_dir.name).glob('*/'))
-            return max(prev_chapters, key=lambda x: u.get_first_int(x.name))
-        return next((self.book_output_dir / part_name).glob(f'第{chapter_num-1}章-*/'))
+    def get_novel_chapter_outline(self, max_tokens: int = 20000) -> str:
+        contents: list[str] = []
+        tokens = 0
+        parts = u.sorted_subdirs(self.book_output_dir)
+        parts.reverse()
+        for part in parts:
+            chapters = u.sorted_subdirs(part)
+            chapters.reverse()
+            for chapter in chapters:
+                f = chapter / '大纲.md'
+                if f.exists():
+                    name = f'{part.name} / {chapter.name} / 大纲'
+                    text = f.read_text(encoding='utf-8')
+                    content = f'<{name}>\n' + text + f'\n</{name}>\n'
+                    t = u.get_num_ctx(content)
+                    if t + tokens > max_tokens:
+                        break
+                    contents.insert(0, content)
+                    tokens += t
+        return ''.join(contents)
 
     def generate_chapter_outline(self, part_name: str, chapter_name: str):
         '''生成章节大纲文件'''
         path_name = f'{part_name}/{chapter_name}/大纲.md'
         if self.exists(path_name):
             return
+        novel_chapter_outline = self.get_novel_chapter_outline()
         settings_content = self.read_text('设定集.md')
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        prev_content = ''
-        if prev_chapter_dir := self.get_prev_chapter_dir(part_name, chapter_name):
-            if prev_chapter_outline_content := self.read_text(str(prev_chapter_dir / '大纲.md')):
-                prev_content += f'\n\n{prev_chapter_outline_content}'
         self.generate_file(path_name, [
             {'role': 'user', 'content': f'''
-{settings_content}
+{novel_chapter_outline}
 
-{prev_content}
+{settings_content}
 
 {part_outline_content}
 
-写章节大纲，要细分成多个小节，每个小节按起承转合的结构来写，每部分都要有爽点'''}
+写章节大纲，要细分成多个小节，每个小节按起承转合的结构来写'''}
         ])
 
     def get_novel_text(self, max_tokens: int = 20000) -> str:
@@ -207,12 +231,17 @@ class NovelGenerator:
         '''生成章节正文文件'''
         path_name = f'{part_name}/{chapter_name}/正文.md'
         if not self.exists(path_name):
+            novel_text = self.get_novel_text()
             settings_content = self.read_text('设定集.md')
             chapter_outline_content = self.read_text(
                 f'{part_name}/{chapter_name}/大纲.md')
             self.generate_file(path_name, [
-                {'role': 'user', 'content': self.get_novel_text()},
-                {'role': 'user', 'content': f'{settings_content}\n\n{chapter_outline_content}'}
+                {'role': 'user', 'content': f'''\
+{novel_text}
+
+{settings_content}
+
+{chapter_outline_content}'''}
             ])
         content = self.get_true_text(path_name)
         cleaned_path = self.book_output_dir / path_name.replace('.md', '.txt')
