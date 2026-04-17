@@ -104,13 +104,13 @@ class NovelGenerator:
         outline_content = self.read_text('总纲.md')
         parts_str = self.generate_file('卷名.txt', [
             {'role': 'system',
-                'content': '你是一个大卷卷名生成器，输出格式为每行一个 卷名+英文逗号+一句话剧情，不包括第几卷，不使用符号'},
+                'content': '你是一个大卷卷名生成器，输出格式为每行一个 卷名+空格+一句话剧情，不包括第几卷，不使用符号'},
             {'role': 'user', 'content': outline_content}
         ])
         part_names = [
             f"第{i}卷-{part_name}"
             for i, part_name in enumerate((
-                n.split(',', 1)[0].strip('《》') for n in parts_str.splitlines()
+                n.split(' ', 1)[0].strip('《》') for n in parts_str.splitlines()
                 if n and '卷名' not in n), 1)
         ]
         return part_names
@@ -155,13 +155,13 @@ class NovelGenerator:
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
         chapters_str = self.generate_file(f'{part_name}/章名.txt', [
             {'role': 'system',
-                'content': '你是一个章节章名生成器，输出格式为每行一个 章名+英文逗号+一句话剧情，不重复，不包括第几章，不使用符号'},
+                'content': '你是一个章节章名生成器，输出格式为每行一个 章名+空格+一句话剧情，不重复，不包括第几章，不使用符号'},
             {'role': 'user', 'content': part_outline_content}
         ])
         chapter_names = [
             f"第{i}章-{chapter_name}"
             for i, chapter_name in enumerate((
-                n.split(',', 1)[0].strip('《》') for n in chapters_str.splitlines()
+                n.split(' ', 1)[0].strip('《》') for n in chapters_str.splitlines()
                 if n and '章名' not in n), 1)
         ]
         return chapter_names
