@@ -94,6 +94,7 @@ class Chat:
         content = ''
         think_text = ''
         with RichLive(console=console, vertical_overflow='visible') as live:
+            live.update(RichPanel('', title=title))
             for chunk in stream:
                 if chunk.message.thinking:
                     think_text += chunk.message.thinking
