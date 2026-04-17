@@ -26,9 +26,10 @@ rich_traceback_install(console=console)
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
 
 
-def get_num_ctx(text: str) -> int:
+def get_num_ctx(text: str, delta_tokens: int = 0) -> int:
     token_count = len(tokenizer.encode(text))
-    num_ctx = 2**max(15, min(18, math.ceil(math.log2(token_count+5000))))
+    num_ctx = 2**max(15,
+                     min(18, math.ceil(math.log2(token_count+delta_tokens))))
     return num_ctx
 
 
@@ -43,7 +44,7 @@ class Chat:
             messages = [
                 {'role': 'system', 'content': self.system_prompt},
             ] + messages
-        num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages))
+        num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages), 5000)
         stream = self.client.chat(
             self.model, messages, stream=True, think='low', options={'num_ctx': num_ctx})
         is_markdown = title and title.endswith('.md')
