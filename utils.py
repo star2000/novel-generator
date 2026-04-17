@@ -77,14 +77,14 @@ class Chat:
         self.client = ollama.Client()
         self.system_prompt = system_prompt
 
-    def __call__(self, messages: list[dict[str, Any]], title: str | None = None) -> str:
+    def __call__(self, messages: list[dict[str, Any]], title: str | None = None, think: bool = False) -> str:
         if self.system_prompt:
             messages = [
                 {'role': 'system', 'content': self.system_prompt},
             ] + messages
         num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages), 5000)
         stream = self.client.chat(
-            self.model, messages, stream=True, think='low', options={'num_ctx': num_ctx})
+            self.model, messages, stream=True, think=think, options={'num_ctx': num_ctx})
         is_markdown = title and title.endswith('.md')
         content = ''
         think_text = ''

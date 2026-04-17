@@ -5,7 +5,7 @@ import utils as u
 
 parser = argparse.ArgumentParser(description='小说评价器')
 parser.add_argument('--model', '-m', type=str,
-                    default='qwen3.5:4b', help='模型名称')
+                    default='qw', help='模型名称')
 parser.add_argument('--output-dir', '-o', type=str,
                     default='./dist/', help='输出目录路径')
 parser.add_argument('--book-name', '-n', type=str, help='小说书名')
