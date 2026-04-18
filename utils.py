@@ -85,9 +85,10 @@ class Chat:
             format: dict[str, Any] | Literal['', 'json'] | None = None,
     ) -> str:
         if self.system_prompt:
-            messages = [
-                Message(role='system', content=self.system_prompt),
-            ] + list(messages)
+            if not any(m['role'] == 'system' for m in messages):
+                messages = [
+                    Message(role='system', content=self.system_prompt),
+                ] + list(messages)
         num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages), 5000)
         stream = self.client.chat(
             self.model, messages, stream=True, think=think, format=format, options={

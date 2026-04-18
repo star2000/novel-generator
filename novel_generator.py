@@ -9,7 +9,7 @@ import utils as u
 if TYPE_CHECKING:
     from typing import *  # type:ignore
 
-    Message = dict[str, Any]
+    Message = dict[str, Any] | u.Message
 
 
 class NovelGenerator:
@@ -107,17 +107,14 @@ class NovelGenerator:
     def generate_part_names(self):
         '''生成卷名列表'''
         outline_content = self.read_text('总纲.md')
-        parts_str = self.generate_file('卷名.txt', [{
-            'role': 'user', 'content': f'''\
-{outline_content}
-
-根据上面的设定集，输出格式为每行"卷名+空格+至少50字的大致剧情"的卷名文件内容，不包含第几卷，每卷一行
-'''}])
+        parts_str = self.generate_file('卷名.txt', [
+            u.Message(role='system',
+                      content='根据用户输入生成不重复的卷名，每行一个，不包括第几卷，不包括符号'),
+            u.Message(role='user', content=outline_content),
+        ])
         part_names = [
             f"第{i}卷-{part_name}"
-            for i, part_name in enumerate((
-                n.split(' ', 1)[0].strip('《》') for n in parts_str.splitlines()
-                if n and '卷名' not in n), 1)
+            for i, part_name in enumerate((n for n in parts_str.splitlines() if n), 1)
         ]
         return part_names
 
@@ -161,17 +158,14 @@ class NovelGenerator:
     def generate_chapter_names(self, part_name: str):
         '''生成章节名列表'''
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        chapters_str = self.generate_file(f'{part_name}/章名.txt', [{
-            'role': 'user', 'content': f'''\
-{part_outline_content}
-
-根据上面的设定集，输出格式为每行"章名+空格+至少50字的大致剧情"的章名文件内容，不包含第几章，每章一行
-'''}])
+        chapters_str = self.generate_file(f'{part_name}/章名.txt', [
+            u.Message(role='system',
+                      content='根据用户输入生成不重复的章节名，每行一个，不包括第几章，不包括符号'),
+            u.Message(role='user', content=part_outline_content),
+        ])
         chapter_names = [
             f"第{i}章-{chapter_name}"
-            for i, chapter_name in enumerate((
-                n.split(' ', 1)[0].strip('《》') for n in chapters_str.splitlines()
-                if n and '章名' not in n), 1)
+            for i, chapter_name in enumerate((n for n in chapters_str.splitlines() if n), 1)
         ]
         return chapter_names
 
