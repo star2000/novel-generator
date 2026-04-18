@@ -1,12 +1,11 @@
 import os
-from typing import TypeVar
 
 os.environ['NO_PROXY'] = '127.0.0.1,localhost'  # noqa
 
 import math
 import re
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Literal, Sequence, TypeVar
 from urllib.parse import unquote
 
 import markdown
@@ -14,6 +13,7 @@ import ollama
 from bs4 import BeautifulSoup
 from diff_match_patch import diff_match_patch
 from modelscope import AutoTokenizer
+from ollama import Message
 from rich.console import Console as RichConsole
 from rich.console import ConsoleOptions as RichConsoleOptions
 from rich.console import RenderableType as RichRenderableType
@@ -77,14 +77,20 @@ class Chat:
         self.client = ollama.Client()
         self.system_prompt = system_prompt
 
-    def __call__(self, messages: list[dict[str, Any]], title: str | None = None, think: bool = False) -> str:
+    def __call__(
+            self,
+            messages: Sequence[dict[str, Any] | Message],
+            title: str | None = None,
+            think: bool | Literal['low', 'medium', 'high'] = False,
+            format: dict[str, Any] | Literal['', 'json'] | None = None,
+    ) -> str:
         if self.system_prompt:
             messages = [
-                {'role': 'system', 'content': self.system_prompt},
-            ] + messages
+                Message(role='system', content=self.system_prompt),
+            ] + list(messages)
         num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages), 5000)
         stream = self.client.chat(
-            self.model, messages, stream=True, think=think, options={
+            self.model, messages, stream=True, think=think, format=format, options={
                 'num_ctx': num_ctx,
                 'penalty_last_n': -1,
                 'repeat_penalty': 1.5,

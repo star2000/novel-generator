@@ -41,7 +41,7 @@ class NovelGenerator:
             return f'<{path_name}>\n' + text + f'\n</{path_name}>'
         return ''
 
-    def generate_file(self, path_name: str, messages: list[Message], think: bool = True):
+    def generate_file(self, path_name: str, messages: list[Message], think: bool = False):
         '''生成文件'''
         path = self.book_output_dir / path_name
         if path.exists():
@@ -60,7 +60,7 @@ class NovelGenerator:
         '''根据用户要求生成书名'''
         self.book_name = self.chat([
             {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个书名，仅回答一个，不使用符号'}
-        ], '生成书名', think=True)
+        ], '生成书名')
 
     def setup_book_output_dir(self):
         '''设置小说根目录'''
@@ -108,15 +108,16 @@ class NovelGenerator:
     def generate_part_names(self):
         '''生成卷名列表'''
         outline_content = self.read_text('总纲.md')
-        parts_str = self.generate_file('卷名.csv', [
-            {'role': 'system',
-                'content': '你是一个大卷卷名生成器，输出格式为每行一个 "卷名,至少50字的大致剧情"，不包括第几卷，不使用符号'},
-            {'role': 'user', 'content': outline_content}
-        ])
+        parts_str = self.generate_file('卷名.txt', [{
+            'role': 'user', 'content': f'''\
+{outline_content}
+
+根据上面的设定集，输出格式为每行"卷名 至少50字的大致剧情"的卷名文件内容，卷名里不包含第几卷，每卷一行
+'''}])
         part_names = [
             f"第{i}卷-{part_name}"
             for i, part_name in enumerate((
-                n.split(',', 1)[0].strip('《》') for n in parts_str.splitlines()
+                n.split(' ', 1)[0].strip('《》') for n in parts_str.splitlines()
                 if n and '卷名' not in n), 1)
         ]
         return part_names
@@ -162,15 +163,16 @@ class NovelGenerator:
     def generate_chapter_names(self, part_name: str):
         '''生成章节名列表'''
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        chapters_str = self.generate_file(f'{part_name}/章名.csv', [
-            {'role': 'system',
-                'content': '你是一个章节章名生成器，输出格式为每行一个 "章名,至少50字的大致剧情"，章名不重复，不包括第几章，不使用符号'},
-            {'role': 'user', 'content': part_outline_content}
-        ])
+        chapters_str = self.generate_file(f'{part_name}/章名.txt', [{
+            'role': 'user', 'content': f'''\
+{part_outline_content}
+
+根据上面的设定集，输出格式为每行"章名 至少50字的大致剧情"的章名文件内容，章名里不包含第几章，每章一行
+'''}])
         chapter_names = [
             f"第{i}章-{chapter_name}"
             for i, chapter_name in enumerate((
-                n.split(',', 1)[0].strip('《》') for n in chapters_str.splitlines()
+                n.split(' ', 1)[0].strip('《》') for n in chapters_str.splitlines()
                 if n and '章名' not in n), 1)
         ]
         return chapter_names
@@ -267,7 +269,7 @@ class NovelGenerator:
                     {'role': 'system',
                         'content': '你是一个小说正文洗稿器，正文开头不应该出现第几章第几卷，结尾不应该明说本章完，其余必须保持原样'},
                     {'role': 'user', 'content': content}
-                ], f'洗稿 {path_name}', think=False)
+                ], f'洗稿 {path_name}')
                 cleaned_content = u.markdown_to_text(cleaned_content)
                 cleaned_path.write_text(cleaned_content, encoding='utf-8')
             if only_chapter_name in cleaned_content and only_part_name in cleaned_content:
