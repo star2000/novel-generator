@@ -136,7 +136,7 @@ class NovelGenerator:
         outline_content = self.read_text('总纲.md')
         parts_str = self.generate_file('卷名.txt', [
             u.Message(role='system',
-                      content='从用户输入中提取或起个卷名，每行一个，仅输出卷名，不包含编号，不包含符号'),
+                      content='从用户输入中提取或生成所有的卷名，每行一个，仅输出卷名，不包含第几卷'),
             u.Message(role='user', content=outline_content),
         ])
         part_names = [
@@ -187,7 +187,7 @@ class NovelGenerator:
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
         chapters_str = self.generate_file(f'{part_name}/章名.txt', [
             u.Message(role='system',
-                      content='从用户输入中提取或起个章名，每行一个，仅输出章名，不包含编号，不包含符号'),
+                      content='从用户输入中提取或生成所有的章名，每行一个，仅输出章名，不包含第几章'),
             u.Message(role='user', content=part_outline_content),
         ])
         chapter_names = [
