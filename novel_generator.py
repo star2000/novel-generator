@@ -16,6 +16,7 @@ class NovelGenerator:
     def __init__(self, model: str, output_dir: str, user_input: str | None = None, book_name: str | None = None):
         self.chat = u.Chat(model, '''\
 你是一位专业的热门高质量网络小说作家。
+小说结构：设定集、总纲、卷大纲、章节大纲、正文。
 核心守则：
 1. **节奏即生命线**：开局三章定生死，每章必留钩子，精准卡位爽点/悬念，零注水。
 2. **人设驱动剧情**：主角有明确目标与成长弧光，配角有独立动机与功能，情感真实不脸谱化。
@@ -111,7 +112,7 @@ class NovelGenerator:
         outline_content = self.read_text('总纲.md')
         parts_str = self.generate_file('卷名.txt', [
             u.Message(role='system',
-                      content='根据用户输入生成不重复的卷名，每行一个，不包括第几卷，不包括符号'),
+                      content='根据用户输入生成不重复的卷名，每行一个，仅输出卷名，不包含编号，不包含符号'),
             u.Message(role='user', content=outline_content),
         ])
         part_names = [
@@ -162,7 +163,7 @@ class NovelGenerator:
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
         chapters_str = self.generate_file(f'{part_name}/章名.txt', [
             u.Message(role='system',
-                      content='根据用户输入生成不重复的章节名，每行一个，不包括第几章，不包括符号'),
+                      content='根据用户输入生成不重复的章名，每行一个，仅输出章名，不包含编号，不包含符号'),
             u.Message(role='user', content=part_outline_content),
         ])
         chapter_names = [
