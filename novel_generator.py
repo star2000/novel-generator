@@ -112,7 +112,7 @@ class NovelGenerator:
             'role': 'user', 'content': f'''\
 {outline_content}
 
-根据上面的设定集，输出格式为每行"卷名 至少50字的大致剧情"的卷名文件内容，卷名里不包含第几卷，每卷一行
+根据上面的设定集，输出格式为每行"卷名+空格+至少50字的大致剧情"的卷名文件内容，不包含第几卷，每卷一行
 '''}])
         part_names = [
             f"第{i}卷-{part_name}"
@@ -167,7 +167,7 @@ class NovelGenerator:
             'role': 'user', 'content': f'''\
 {part_outline_content}
 
-根据上面的设定集，输出格式为每行"章名 至少50字的大致剧情"的章名文件内容，章名里不包含第几章，每章一行
+根据上面的设定集，输出格式为每行"章名+空格+至少50字的大致剧情"的章名文件内容，不包含第几章，每章一行
 '''}])
         chapter_names = [
             f"第{i}章-{chapter_name}"
