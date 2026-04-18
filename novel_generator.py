@@ -101,8 +101,7 @@ class NovelGenerator:
 要求：{self.user_input}
 
 {settings_content}
-
-写总纲，要细分成多个大卷，每个大卷按起承转合的结构来写'''}
+'''}
         ])
 
     def generate_part_names(self):
@@ -156,8 +155,7 @@ class NovelGenerator:
 {outline_content}
 
 {part_names}
-
-写卷大纲，要细分成多个剧情单元，每个剧情单元按起承转合的结构来写，剧情单元的每个阶段要有描述和章节数量规划'''}
+'''}
         ])
 
     def generate_chapter_names(self, part_name: str):
@@ -216,8 +214,7 @@ class NovelGenerator:
 {part_outline_content}
 
 {chapter_names}
-
-写章节大纲，要细分成多个小节，每个小节按起承转合的结构来写'''}
+'''}
         ])
 
     def get_novel_text(self, max_tokens: int = 20000) -> str:
