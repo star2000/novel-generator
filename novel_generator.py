@@ -86,7 +86,7 @@ class NovelGenerator:
     def generate_book_name(self):
         '''根据用户要求生成书名'''
         self.book_name = self.chat([
-            {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个书名，仅回答一个，不使用符号'}
+            {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个书名，仅回答一个，不携带书名号'}
         ], '生成书名')
 
     def setup_book_output_dir(self):
@@ -305,7 +305,9 @@ class NovelGenerator:
         '''运行小说生成流程'''
         # 1. 获取用户输入
         if self.user_input is None and self.book_name is None:
-            self.user_input = input('请输入小说生成要求：')
+            self.user_input = self.chat([
+                {'role': 'user', 'content': '仅生成一个小说的开题灵感，包含一个书名和一个介绍，不包含无关内容'}
+            ], title='生成开题灵感')
 
         # 2. 生成书名并设置根目录
         if self.book_name is None:
