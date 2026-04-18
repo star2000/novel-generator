@@ -86,7 +86,7 @@ class NovelGenerator:
     def generate_book_name(self):
         '''根据用户要求生成书名'''
         self.book_name = self.chat([
-            {'role': 'user', 'content': f'要求：{self.user_input}\n\n起个书名，仅回答一个，不携带书名号'}
+            {'role': 'user', 'content': f'开题灵感：{self.user_input}\n\n提取或起个书名，仅回答一个，不携带书名号'}
         ], '生成书名')
 
     def setup_book_output_dir(self):
@@ -111,7 +111,7 @@ class NovelGenerator:
             {'role': 'user', 'content': f'''\
 《{self.book_name}》
 
-要求：{self.user_input}
+开题灵感：{self.user_input}
 
 写设定集，需要定义剧情大纲之外的所有方面，要有一定深度的各种人、事、物的名字和背景设定，立住人设，深化情感内核，用于生成大纲
 '''}
@@ -125,7 +125,7 @@ class NovelGenerator:
             {'role': 'user', 'content': f'''\
 《{self.book_name}》
 
-要求：{self.user_input}
+开题灵感：{self.user_input}
 
 {settings_content}
 '''}
