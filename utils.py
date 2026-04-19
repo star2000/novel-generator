@@ -57,7 +57,7 @@ def loop_last(values: Iterable[T]) -> Iterable[tuple[bool, T]]:
 
 
 def is_repeated(text: str):
-    return re.search(r'([\s\S]{2,1000})\1\1\1', text)
+    return re.search(r'([\s\S]{2,1000})\1\1', text)
 
 
 class RichTail:

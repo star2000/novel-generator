@@ -285,7 +285,7 @@ class NovelGenerator:
             else:
                 cleaned_content = self.chat([
                     {'role': 'system',
-                        'content': '你是一个小说正文洗稿器，开头不应该出现第几章第几卷，结尾不应该明说本章完，总之这类影响读者阅读体验的与正文无关的内容，要删或改，其余必须保持原样'},
+                        'content': '你是一个小说正文洗稿器，开头不应该出现第几章第几卷，结尾不应该明说本章完，内容不应该出现无意义的重复，总之这类影响读者阅读体验的与正文无关的内容，要删或改，其余必须保持原样'},
                     {'role': 'user', 'content': content}
                 ], f'洗稿 {path_name}')
                 cleaned_content = u.markdown_to_text(cleaned_content)
