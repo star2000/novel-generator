@@ -20,11 +20,12 @@ def review_novel(novel_dir: Path):
     word_num = 0
     word_list = [f'《{novel_dir.name}》']
     for part in u.sorted_subdirs(novel_dir):
-        part_num += 1
-        word_list.append(part.name)
         for chapter in u.sorted_subdirs(part):
-            word_file = (chapter / '正文.txt')
+            word_file = (chapter / '正文.md')
             if word_file.exists():
+                if part.name not in word_list:
+                    part_num += 1
+                    word_list.append(part.name)
                 chapter_num += 1
                 word_list.append(chapter.name)
                 word = word_file.read_text(encoding='utf-8')

@@ -12,7 +12,6 @@ import markdown
 import ollama
 from bs4 import BeautifulSoup
 from diff_match_patch import diff_match_patch
-from modelscope import AutoTokenizer
 from ollama import Message
 from rich.console import Console as RichConsole
 from rich.console import ConsoleOptions as RichConsoleOptions
@@ -28,13 +27,16 @@ console = RichConsole()
 
 rich_traceback_install(console=console)
 
-tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
+tokenizer = None
 
 
-def get_num_ctx(text: str, delta_tokens: int = 0) -> int:
+def get_num_ctx(text: str, num_predict: int = 0) -> int:
+    global tokenizer
+    if tokenizer is None:
+        from modelscope import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
     token_count = len(tokenizer.encode(text))
-    num_ctx = 2**max(15,
-                     min(18, math.ceil(math.log2(token_count+delta_tokens))))
+    num_ctx = 2**max(15, min(18, math.ceil(math.log2(token_count+num_predict))))
     return num_ctx
 
 
@@ -52,6 +54,10 @@ def loop_last(values: Iterable[T]) -> Iterable[tuple[bool, T]]:
         yield False, previous_value
         previous_value = value
     yield True, previous_value
+
+
+def is_repeated(text: str):
+    return re.search(r'([\s\S]{2,1000})\1\1\1', text)
 
 
 class RichTail:
@@ -83,32 +89,40 @@ class Chat:
             title: str | None = None,
             think: bool | Literal['low', 'medium', 'high'] = False,
             format: dict[str, Any] | Literal['', 'json'] | None = None,
+            num_predict: int = 5000,
     ) -> str:
         if self.system_prompt:
             if not any(m['role'] == 'system' for m in messages):
                 messages = [
                     Message(role='system', content=self.system_prompt),
                 ] + list(messages)
-        num_ctx = get_num_ctx('\n'.join(m['content'] for m in messages), 5000)
-        stream = self.client.chat(
-            self.model, messages, stream=True, think=think, format=format, options={
-                'num_ctx': num_ctx,
-                'frequency_penalty': 0.75,
-            })
+        if think:
+            num_predict += 10000
         is_markdown = title and title.endswith('.md')
-        content = ''
-        think_text = ''
-        with RichLive(console=console, vertical_overflow='visible') as live:
-            live.update(RichPanel('', title=title))
-            for chunk in stream:
-                if chunk.message.thinking:
-                    think_text += chunk.message.thinking
-                    live.update(
-                        RichPanel(RichTail(RichMarkdown(think_text)), title=title))
-                elif chunk.message.content:
-                    content += chunk.message.content
-                    live.update(RichPanel(RichTail(RichMarkdown(content)
-                                                   if is_markdown else content), title=title))
+        with RichLive('', console=console, vertical_overflow='visible') as live:
+            num_ctx = get_num_ctx(
+                '\n'.join(m['content'] for m in messages), num_predict)
+            while True:
+                content = ''
+                think_text = ''
+                stream = self.client.chat(
+                    self.model, messages, stream=True, think=think, format=format, options={
+                        'num_ctx': num_ctx,
+                        'num_predict': num_predict,
+                    })
+                for chunk in stream:
+                    if chunk.message.thinking:
+                        think_text += chunk.message.thinking
+                        live.update(
+                            RichPanel(RichTail(RichMarkdown(think_text)), title=title))
+                    elif chunk.message.content:
+                        content += chunk.message.content
+                        live.update(RichPanel(RichTail(RichMarkdown(content)
+                                                       if is_markdown else content), title=title))
+                        if is_repeated(content):
+                            break
+                else:
+                    break
             live.update(RichPanel(RichMarkdown(content)
                                   if is_markdown else content, title=title))
         return content.strip()
