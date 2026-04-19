@@ -93,9 +93,7 @@ class Chat:
         stream = self.client.chat(
             self.model, messages, stream=True, think=think, format=format, options={
                 'num_ctx': num_ctx,
-                'penalty_last_n': -1,
-                'repeat_penalty': 1.5,
-                'frequency_penalty': 0.5,
+                'frequency_penalty': 0.75,
             })
         is_markdown = title and title.endswith('.md')
         content = ''
