@@ -137,8 +137,8 @@ class NovelGenerator:
         parts_str = self.generate_file('卷名.txt', [
             u.Message(role='system', content='你是一个小说卷名生成器'),
             u.Message(
-                role='user', content=f'{outline_content}\n\n提取或生成所有的卷名，每行一个，仅输出卷名，不包含第几卷'),
-        ])
+                role='user', content=f'{outline_content}\n\n提取或生成所有的卷名，不重复，每行一个，仅输出卷名，不包含第几卷'),
+        ], think=True)
         part_names = [
             f"第{i}卷-{part_name}"
             for i, part_name in enumerate((n for n in parts_str.splitlines() if n), 1)
@@ -188,7 +188,7 @@ class NovelGenerator:
         chapters_str = self.generate_file(f'{part_name}/章名.txt', [
             u.Message(role='system', content='你是一个小说章节名生成器'),
             u.Message(
-                role='user', content=f'{part_outline_content}\n\n提取或生成所有的章节名，每行一个，仅输出章节名，不包含第几章'),
+                role='user', content=f'{part_outline_content}\n\n提取或生成所有的章节名，不重复，每行一个，仅输出章节名，不包含第几章'),
         ], think=True)
         chapter_names = [
             f"第{i}章-{chapter_name}"
