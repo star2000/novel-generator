@@ -99,7 +99,8 @@ class Chat:
         if think:
             num_predict += 10000
         is_markdown = title and title.endswith('.md')
-        with RichLive('', console=console, vertical_overflow='visible') as live:
+        with RichLive(console=console, vertical_overflow='visible') as live:
+            live.update(RichPanel('', title=title))
             num_ctx = get_num_ctx(
                 '\n'.join(m['content'] for m in messages), num_predict)
             while True:
