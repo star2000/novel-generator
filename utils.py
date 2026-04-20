@@ -12,7 +12,7 @@ import markdown
 import ollama
 from bs4 import BeautifulSoup
 from diff_match_patch import diff_match_patch
-from ollama import Message
+from pydantic import model_validator
 from rich.console import Console as RichConsole
 from rich.console import ConsoleOptions as RichConsoleOptions
 from rich.console import RenderableType as RichRenderableType
@@ -44,7 +44,6 @@ T = TypeVar("T")
 
 
 def loop_last(values: Iterable[T]) -> Iterable[tuple[bool, T]]:
-    """Iterate and generate a tuple with a flag for last value."""
     iter_values = iter(values)
     try:
         previous_value = next(iter_values)
@@ -54,10 +53,6 @@ def loop_last(values: Iterable[T]) -> Iterable[tuple[bool, T]]:
         yield False, previous_value
         previous_value = value
     yield True, previous_value
-
-
-def is_repeated(text: str):
-    return re.search(r'([\s\S]{2,1000})\1\1', text)
 
 
 class RichTail:
@@ -75,6 +70,19 @@ class RichTail:
             yield from line
             if not last:
                 yield new_line
+
+
+def is_repeated(text: str):
+    return re.search(r'([\s\S]{2,1000})\1\1', text)
+
+
+class Message(ollama.Message):
+    @model_validator(mode='after')
+    def validate_role(self):
+        if self.role not in ['assistant', 'system', 'user']:
+            self.content = f"{self.role}: {self.content or ''}"
+            self.role = 'user'
+        return self
 
 
 class Chat:

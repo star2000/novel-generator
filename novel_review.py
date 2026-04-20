@@ -27,7 +27,8 @@ def review_novel(novel_dir: Path):
                     part_num += 1
                     word_list.append(part.name)
                 chapter_num += 1
-                word_list.append(chapter.name)
+                word_list.append(f'第{chapter_num}章-' +
+                                 chapter.name.split('-')[1])
                 word = word_file.read_text(encoding='utf-8')
                 word_num += len(word)
                 word_list.append(word)
