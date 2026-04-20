@@ -34,7 +34,11 @@ def get_num_ctx(text: str, num_predict: int = 0) -> int:
     global tokenizer
     if tokenizer is None:
         from modelscope import AutoTokenizer
-        tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(
+                'Qwen/Qwen3.5-4B', local_files_only=True)
+        except:
+            tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
     token_count = len(tokenizer.encode(text))
     num_ctx = 2**max(15, min(18, math.ceil(math.log2(token_count+num_predict))))
     return num_ctx
@@ -85,17 +89,21 @@ class Message(ollama.Message):
         return self
 
 
+ThinkType = bool | Literal['low', 'medium', 'high'] | None
+
+
 class Chat:
-    def __init__(self, model: str, system_prompt: str | None = None):
+    def __init__(self, model: str, system_prompt: str | None = None, think: ThinkType = False):
         self.model = model
         self.client = ollama.Client()
         self.system_prompt = system_prompt
+        self.think: ThinkType = think
 
     def __call__(
             self,
             messages: Sequence[dict[str, Any] | Message],
             title: str | None = None,
-            think: bool | Literal['low', 'medium', 'high'] = False,
+            think: ThinkType = None,
             format: dict[str, Any] | Literal['', 'json'] | None = None,
             num_predict: int = 5000,
     ) -> str:
@@ -104,6 +112,8 @@ class Chat:
                 messages = [
                     Message(role='system', content=self.system_prompt),
                 ] + list(messages)
+        if think is None:
+            think = self.think
         if think:
             num_predict += 10000
         is_markdown = title and title.endswith('.md')
