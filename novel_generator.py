@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 
 class NovelGenerator:
+    max_tokens = 1024*60
+
     def __init__(self, model: str, output_dir: str, user_input: str | None = None, book_name: str | None = None):
         self.chat = u.Chat(model, r'''\
 你是一位专业的热门高质量网络小说作家。
@@ -216,7 +218,7 @@ class NovelGenerator:
         ]
         return part_names
 
-    def get_novel_part_outline(self, max_tokens: int = 20000) -> str:
+    def get_novel_part_outline(self) -> str:
         contents: list[str] = []
         tokens = 0
         parts = u.sorted_subdirs(self.book_output_dir)
@@ -228,7 +230,7 @@ class NovelGenerator:
                 text = f.read_text(encoding='utf-8')
                 content = f'<{name}>\n' + text + f'\n</{name}>\n'
                 t = u.get_num_ctx(content)
-                if t + tokens > max_tokens:
+                if t + tokens > self.max_tokens:
                     break
                 contents.insert(0, content)
                 tokens += t
@@ -267,7 +269,7 @@ class NovelGenerator:
         ]
         return chapter_names
 
-    def get_novel_chapter_outline(self, max_tokens: int = 20000) -> str:
+    def get_novel_chapter_outline(self) -> str:
         contents: list[str] = []
         tokens = 0
         parts = u.sorted_subdirs(self.book_output_dir)
@@ -282,7 +284,7 @@ class NovelGenerator:
                     text = f.read_text(encoding='utf-8')
                     content = f'<{name}>\n' + text + f'\n</{name}>\n'
                     t = u.get_num_ctx(content)
-                    if t + tokens > max_tokens:
+                    if t + tokens > self.max_tokens:
                         break
                     contents.insert(0, content)
                     tokens += t
@@ -309,7 +311,7 @@ class NovelGenerator:
 '''}
         ])
 
-    def get_novel_text(self, max_tokens: int = 20000) -> str:
+    def get_novel_text(self) -> str:
         contents: list[str] = []
         tokens = 0
         parts = u.sorted_subdirs(self.book_output_dir)
@@ -324,7 +326,7 @@ class NovelGenerator:
                     text = f.read_text(encoding='utf-8')
                     content = f'<{name}>\n' + text + f'\n</{name}>\n'
                     t = u.get_num_ctx(content)
-                    if t + tokens > max_tokens:
+                    if t + tokens > self.max_tokens:
                         break
                     contents.insert(0, content)
                     tokens += t
