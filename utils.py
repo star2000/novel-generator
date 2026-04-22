@@ -77,7 +77,7 @@ class RichTail:
 
 
 def is_repeated(text: str):
-    return re.search(r'([\s\S]{2,1000})\1\1', text)
+    return re.search(r'([\s\S]{,1000}[一-龟]{2}[\s\S]{,1000})\1\1', text)
 
 
 class Message(ollama.Message):
