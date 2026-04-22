@@ -83,7 +83,7 @@ def is_repeated(text: str):
 class Message(ollama.Message):
     @model_validator(mode='after')
     def validate_role(self):
-        if self.role not in ['assistant', 'system', 'user']:
+        if self.role not in ['assistant', 'system', 'user', 'tool']:
             self.content = f"{self.role}: {self.content or ''}"
             self.role = 'user'
         return self
@@ -107,11 +107,11 @@ class Chat:
             format: dict[str, Any] | Literal['', 'json'] | None = None,
             num_predict: int = 5000,
     ) -> str:
-        if self.system_prompt:
-            if not any(m['role'] == 'system' for m in messages):
-                messages = [
-                    Message(role='system', content=self.system_prompt),
-                ] + list(messages)
+        if self.system_prompt and messages[0]['role'] != 'system':
+            messages = [
+                Message(role='system', content=self.system_prompt),
+                *messages,
+            ]
         if think is None:
             think = self.think
         if think:
