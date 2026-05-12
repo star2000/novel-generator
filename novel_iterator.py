@@ -70,6 +70,16 @@ class NovelIterator:
         self.settings += update
         (self.working_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
 
+    def compress_settings(self):
+        """压缩设定集，去除冗余内容，保持核心信息不变"""
+        prompt = f"""\
+当前设定集：
+{self.settings}
+请压缩设定集，去除冗余内容，保持设定集核心信息不变，字数要非常少，文字简练
+"""
+        self.settings = self.chat(prompt, '压缩设定集')
+        (self.working_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
+
     def write_chapter(self) -> str:
         """写一章正文，结尾要有钩子"""
         chapter_num = len(self.chapters) + 1
@@ -93,6 +103,7 @@ class NovelIterator:
             content, encoding='utf-8'
         )
         self.update_settings(content)
+        self.compress_settings()
 
     def run(self):
         """运行小说迭代器"""
