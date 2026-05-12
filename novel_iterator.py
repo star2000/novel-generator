@@ -75,7 +75,7 @@ class NovelIterator:
         prompt = f"""\
 当前设定集：
 {self.settings}
-请压缩设定集，去除冗余内容，保持设定集核心信息不变，字数要非常少，文字简练
+请压缩设定集，去除冗余内容，保持设定集核心信息不变
 """
         self.settings = self.chat(prompt, '压缩设定集')
         (self.working_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
@@ -103,7 +103,8 @@ class NovelIterator:
             content, encoding='utf-8'
         )
         self.update_settings(content)
-        self.compress_settings()
+        if chapter_num % 5 == 0:
+            self.compress_settings()
 
     def run(self):
         """运行小说迭代器"""
