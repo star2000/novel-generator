@@ -15,8 +15,7 @@ class NovelIterator:
             user_input = input('要求：')
 
         self.chat = u.Chat(model)
-        self.working_dir = Path(output_dir) / u.now().strftime('%Y%m%d_%H%M%S')
-        self.working_dir.mkdir(parents=True, exist_ok=True)
+
         self.outline = ''
         self.settings = ''
         self.chapters = []
@@ -38,6 +37,18 @@ class NovelIterator:
 """,
             '生成最小可行性大纲',
         )
+        self.book_name = self.chat(
+            f"""\
+根据以下大纲，生成一个吸引人的小说书名：
+{self.outline}
+要求：
+- 书名要简洁有力，能够引起读者兴趣
+- 书名要与大纲内容相关联
+""",
+            '生成小说书名',
+        )
+        self.working_dir = Path(output_dir) / self.book_name
+        self.working_dir.mkdir(parents=True, exist_ok=True)
 
     def update_settings(self, content: str):
         """更新设定集"""
@@ -85,10 +96,6 @@ class NovelIterator:
 
     def run(self):
         """运行小说迭代器"""
-        print('=' * 50)
-        print('开始小说创作循环')
-        print('=' * 50)
-
         while True:
             self.write_chapter()
 
