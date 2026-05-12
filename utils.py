@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta, timezone
 
 os.environ['NO_PROXY'] = '127.0.0.1,localhost'
 
@@ -13,7 +14,6 @@ import markdown
 import ollama
 from bs4 import BeautifulSoup
 from diff_match_patch import diff_match_patch
-from huggingface_hub.utils import LocalEntryNotFoundError
 from pydantic import model_validator
 from rich.console import Console as RichConsole
 from rich.console import ConsoleOptions as RichConsoleOptions
@@ -41,7 +41,7 @@ def get_num_ctx(text: str, num_predict: int = 0) -> int:
             tokenizer = AutoTokenizer.from_pretrained(
                 'Qwen/Qwen3.5-4B', local_files_only=True
             )
-        except LocalEntryNotFoundError:
+        except ValueError:
             tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
     token_count = len(tokenizer.encode(text))
     num_ctx = 2 ** max(15, min(18, math.ceil(math.log2(token_count + num_predict))))
@@ -131,10 +131,11 @@ class Chat:
             num_predict += 10000
         is_markdown = title and title.endswith('.md')
         with RichLive(console=console, vertical_overflow='visible') as live:
-            live.update(RichPanel('', title=title))
             num_ctx = get_num_ctx(
-                '\n'.join(m['content'] for m in messages), num_predict
+                '\n'.join(m['content'] for m in messages) if is_chat else messages,
+                num_predict,
             )
+            live.update(RichPanel('', title=title))
             while True:
                 content = ''
                 think_text = ''
@@ -225,3 +226,7 @@ def get_first_int(s: str) -> int:
 
 def sorted_subdirs(path: Path) -> list[Path]:
     return sorted(path.glob('*/'), key=lambda x: get_first_int(x.name))
+
+
+def now():
+    return datetime.now(tz=timezone(timedelta(hours=8)))

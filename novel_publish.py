@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
@@ -204,7 +204,7 @@ class FanQieNovelAuthorClient:
         return self._request('get', url, params=params, **kwargs)
 
     def secsdk_csrf_token(self):
-        now = datetime.now(tz=timezone(timedelta(hours=8)))
+        now = u.now()
         if (
             self._secsdk_csrf_token_expired_at
             and self._secsdk_csrf_token_expired_at < now
