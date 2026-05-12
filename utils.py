@@ -110,15 +110,19 @@ class Chat:
 
     def __call__(
         self,
-        messages: Sequence[dict[str, Any] | Message],
+        messages: Sequence[dict[str, Any] | Message] | str,
         title: str | None = None,
         think: ThinkType = None,
         format: dict[str, Any] | Literal['', 'json'] | None = None,
+        system_prompt: str | None = None,
         num_predict: int = 5000,
     ) -> str:
-        if self.system_prompt and messages[0]['role'] != 'system':
+        is_chat = not isinstance(messages, str)
+        if system_prompt is None:
+            system_prompt = self.system_prompt
+        if is_chat and system_prompt and messages[0]['role'] != 'system':
             messages = [
-                Message(role='system', content=self.system_prompt),
+                Message(role='system', content=system_prompt),
                 *messages,
             ]
         if think is None:
@@ -134,25 +138,41 @@ class Chat:
             while True:
                 content = ''
                 think_text = ''
-                stream = self.client.chat(
-                    self.model,
-                    messages,
-                    stream=True,
-                    think=think,
-                    format=format,
-                    options={
-                        'num_ctx': num_ctx,
-                        'num_predict': num_predict,
-                    },
-                )
+                if is_chat:
+                    stream = self.client.chat(
+                        self.model,
+                        messages,
+                        stream=True,
+                        think=think,
+                        format=format,
+                        options={
+                            'num_ctx': num_ctx,
+                            'num_predict': num_predict,
+                        },
+                    )
+                else:
+                    stream = self.client.generate(
+                        self.model,
+                        messages,
+                        system=system_prompt or '',
+                        stream=True,
+                        think=think,
+                        format=format,
+                        options={
+                            'num_ctx': num_ctx,
+                            'num_predict': num_predict,
+                        },
+                    )
                 for chunk in stream:
-                    if chunk.message.thinking:
-                        think_text += chunk.message.thinking
+                    part_think = chunk.message.thinking if is_chat else chunk.thinking
+                    part_content = chunk.message.content if is_chat else chunk.response
+                    if part_think:
+                        think_text += part_think
                         live.update(
                             RichPanel(RichTail(RichMarkdown(think_text)), title=title)
                         )
-                    elif chunk.message.content:
-                        content += chunk.message.content
+                    elif part_content:
+                        content += part_content
                         live.update(
                             RichPanel(
                                 RichTail(
