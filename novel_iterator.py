@@ -42,17 +42,17 @@ class NovelIterator:
     def update_settings(self, content: str):
         """更新设定集"""
         prompt = f"""\
-当前设定集：
-{self.settings}
-
-请根据以下内容，补充设定集：
-
 ```txt
 {content}
 ```
 
-设定集应只关注底层设定，不包含剧情内容。
-输出追加设定集，不包含已经存在的设定：
+当前设定集：
+{self.settings}
+
+请根据以上内容，补充设定集
+
+设定集应只关注底层设定，不包含任何多余内容，字数要非常少，文字简练
+在当前设定集后追加内容：
 """
 
         update = self.chat(prompt, '更新设定集')
@@ -63,7 +63,7 @@ class NovelIterator:
         """写一章正文，结尾要有钩子"""
         chapter_num = len(self.chapters) + 1
         prompt = f"""\
-{'\n\n'.join(f'第 {i} 章\n{c}' for i, c in enumerate(self.chapters, 1))}
+{'\n\n'.join(f'第 {i} 章\n{c}' for i, c in enumerate(self.chapters, 1) if i > chapter_num - 5)}
 
 大纲：
 {self.outline}
@@ -71,12 +71,7 @@ class NovelIterator:
 设定集：
 {self.settings}
 
-请根据以上内容，写一章小说正文
-要求：
-1. 章节结尾必须有钩子，引出下一章
-2. 保持人物性格一致
-3. 情节要有张力
-4. 字数控制在 2000-3000 字
+请根据以上内容，写一章小说正文，结尾要有钩子，吸引读者继续阅读下一章
 
 第 {chapter_num} 章
 """
