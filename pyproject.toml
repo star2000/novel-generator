@@ -14,7 +14,7 @@ dependencies = [
 ]
 description = "高质量长篇小说生成器"
 name = "novel-generator"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 version = "0.0.1"
 
 [tool.uv]
