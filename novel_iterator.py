@@ -48,6 +48,7 @@ class NovelIterator:
         )
         self.working_dir = Path(output_dir) / self.book_name
         self.working_dir.mkdir(parents=True, exist_ok=True)
+        (self.working_dir / '大纲.md').write_text(self.outline, encoding='utf-8')
 
     def update_settings(self, content: str):
         """更新设定集"""
