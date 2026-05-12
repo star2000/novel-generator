@@ -84,17 +84,15 @@ class NovelIterator:
         """写一章正文，结尾要有钩子"""
         chapter_num = len(self.chapters) + 1
         prompt = f"""\
-{'\n\n'.join(f'第 {i} 章\n{c}' for i, c in enumerate(self.chapters, 1) if i > chapter_num - 5)}
-
 大纲：
 {self.outline}
 
 设定集：
 {self.settings}
 
-请根据以上内容，写一章小说正文，结尾要自然地留下能引出悬念的钩子
+{'\n\n'.join(f'第 {i} 章\n{c}' for i, c in enumerate(self.chapters, 1) if i > chapter_num - 5)}
 
-第 {chapter_num} 章
+输出第 {chapter_num} 章的正文，结尾要自然地留下悬念的钩子作为下一章的开头
 """
 
         content = self.chat(prompt, f'写第 {chapter_num} 章')
