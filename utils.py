@@ -1,17 +1,19 @@
 import os
 
-os.environ['NO_PROXY'] = '127.0.0.1,localhost'  # noqa
+os.environ['NO_PROXY'] = '127.0.0.1,localhost'
 
 import math
 import re
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Any, Iterable, Literal, Sequence, TypeVar
+from typing import Any, Literal, TypeVar
 from urllib.parse import unquote
 
 import markdown
 import ollama
 from bs4 import BeautifulSoup
 from diff_match_patch import diff_match_patch
+from huggingface_hub.utils import LocalEntryNotFoundError
 from pydantic import model_validator
 from rich.console import Console as RichConsole
 from rich.console import ConsoleOptions as RichConsoleOptions
@@ -34,20 +36,22 @@ def get_num_ctx(text: str, num_predict: int = 0) -> int:
     global tokenizer
     if tokenizer is None:
         from modelscope import AutoTokenizer
+
         try:
             tokenizer = AutoTokenizer.from_pretrained(
-                'Qwen/Qwen3.5-4B', local_files_only=True)
-        except:
+                'Qwen/Qwen3.5-4B', local_files_only=True
+            )
+        except LocalEntryNotFoundError:
             tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3.5-4B')
     token_count = len(tokenizer.encode(text))
-    num_ctx = 2**max(15, min(18, math.ceil(math.log2(token_count+num_predict))))
+    num_ctx = 2 ** max(15, min(18, math.ceil(math.log2(token_count + num_predict))))
     return num_ctx
 
 
-T = TypeVar("T")
+T = TypeVar('T')
 
 
-def loop_last(values: Iterable[T]) -> Iterable[tuple[bool, T]]:
+def loop_last[T](values: Iterable[T]) -> Iterable[tuple[bool, T]]:
     iter_values = iter(values)
     try:
         previous_value = next(iter_values)
@@ -66,9 +70,11 @@ class RichTail:
     ):
         self.renderable = renderable
 
-    def __rich_console__(self, console: RichConsole, options: RichConsoleOptions) -> RichRenderResult:
+    def __rich_console__(
+        self, console: RichConsole, options: RichConsoleOptions
+    ) -> RichRenderResult:
         lines = console.render_lines(self.renderable, options, pad=False)
-        lines = lines[-options.size.height//2:]
+        lines = lines[-options.size.height // 2 :]
         new_line = RichSegment.line()
         for last, line in loop_last(lines):
             yield from line
@@ -85,7 +91,7 @@ class Message(ollama.Message):
     @model_validator(mode='after')
     def validate_role(self):
         if self.role not in ['assistant', 'system', 'user', 'tool']:
-            self.content = f"{self.role}: {self.content or ''}"
+            self.content = f'{self.role}: {self.content or ""}'
             self.role = 'user'
         return self
 
@@ -94,19 +100,21 @@ ThinkType = bool | Literal['low', 'medium', 'high'] | None
 
 
 class Chat:
-    def __init__(self, model: str, system_prompt: str | None = None, think: ThinkType = False):
+    def __init__(
+        self, model: str, system_prompt: str | None = None, think: ThinkType = False
+    ):
         self.model = model
         self.client = ollama.Client()
         self.system_prompt = system_prompt
         self.think: ThinkType = think
 
     def __call__(
-            self,
-            messages: Sequence[dict[str, Any] | Message],
-            title: str | None = None,
-            think: ThinkType = None,
-            format: dict[str, Any] | Literal['', 'json'] | None = None,
-            num_predict: int = 5000,
+        self,
+        messages: Sequence[dict[str, Any] | Message],
+        title: str | None = None,
+        think: ThinkType = None,
+        format: dict[str, Any] | Literal['', 'json'] | None = None,
+        num_predict: int = 5000,
     ) -> str:
         if self.system_prompt and messages[0]['role'] != 'system':
             messages = [
@@ -121,30 +129,47 @@ class Chat:
         with RichLive(console=console, vertical_overflow='visible') as live:
             live.update(RichPanel('', title=title))
             num_ctx = get_num_ctx(
-                '\n'.join(m['content'] for m in messages), num_predict)
+                '\n'.join(m['content'] for m in messages), num_predict
+            )
             while True:
                 content = ''
                 think_text = ''
                 stream = self.client.chat(
-                    self.model, messages, stream=True, think=think, format=format, options={
+                    self.model,
+                    messages,
+                    stream=True,
+                    think=think,
+                    format=format,
+                    options={
                         'num_ctx': num_ctx,
                         'num_predict': num_predict,
-                    })
+                    },
+                )
                 for chunk in stream:
                     if chunk.message.thinking:
                         think_text += chunk.message.thinking
                         live.update(
-                            RichPanel(RichTail(RichMarkdown(think_text)), title=title))
+                            RichPanel(RichTail(RichMarkdown(think_text)), title=title)
+                        )
                     elif chunk.message.content:
                         content += chunk.message.content
-                        live.update(RichPanel(RichTail(RichMarkdown(content)
-                                                       if is_markdown else content), title=title))
+                        live.update(
+                            RichPanel(
+                                RichTail(
+                                    RichMarkdown(content) if is_markdown else content
+                                ),
+                                title=title,
+                            )
+                        )
                         if is_repeated(content):
                             break
                 else:
                     break
-            live.update(RichPanel(RichMarkdown(content)
-                                  if is_markdown else content, title=title))
+            live.update(
+                RichPanel(
+                    RichMarkdown(content) if is_markdown else content, title=title
+                )
+            )
         return content.strip()
 
 
@@ -165,8 +190,8 @@ def markdown_to_text(markdown_string: str) -> str:
 
 def text_to_html(text: str) -> str:
     ps: list[str] = []
-    for l in text.splitlines():
-        p = l.strip()
+    for line in text.splitlines():
+        p = line.strip()
         if p:
             ps.append(f'<p>{p}</p>')
     return ''.join(ps)

@@ -7,16 +7,24 @@ from typing import TYPE_CHECKING
 import utils as u
 
 if TYPE_CHECKING:
-    from typing import *  # type:ignore
+    from typing import *
 
     Message = dict[str, Any] | u.Message
 
 
 class NovelGenerator:
-    max_tokens = 1024*60
+    max_tokens = 1024 * 60
 
-    def __init__(self, model: str, output_dir: str, user_input: str | None = None, book_name: str | None = None):
-        self.chat = u.Chat(model, r'''\
+    def __init__(
+        self,
+        model: str,
+        output_dir: str,
+        user_input: str | None = None,
+        book_name: str | None = None,
+    ):
+        self.chat = u.Chat(
+            model,
+            r"""\
 你是一位专业的热门高质量网络小说作家。
 小说结构：设定集、总纲、卷大纲、章节大纲、正文。
 
@@ -120,56 +128,64 @@ class NovelGenerator:
 #### 3. 核心不变原则 (Core Consistency)
 *   **内容**：在允许微调的情况下，故事的**核心梗（Core Concept）** 和 **主角动机（Core Motivation）** 必须保持稳定。
 *   **执行**：可以改变主角身边的配角、可以改变反派的脸谱，但不能改变主角“为什么要变强”这个核心驱动力，否则故事就失去了灵魂，变成了单纯的流水账。
-''')
+""",
+        )
         self.output_dir = Path(output_dir)
         self.user_input = user_input
         self.book_name = book_name
 
     def exists(self, path_name: str) -> bool:
-        '''检查文件是否存在'''
+        """检查文件是否存在"""
         return (self.book_output_dir / path_name).exists()
 
     def get_true_text(self, path_name: str) -> str:
-        '''获取真实文件内容'''
+        """获取真实文件内容"""
         if not self.exists(path_name):
             return ''
         return (self.book_output_dir / path_name).read_text(encoding='utf-8')
 
     def read_text(self, path_name: str) -> str:
-        '''读取文件内容'''
+        """读取文件内容"""
         if text := self.get_true_text(path_name):
             return f'<{path_name}>\n' + text + f'\n</{path_name}>'
         return ''
 
-    def generate_file(self, path_name: str, messages: list[Message], think: bool = False):
-        '''生成文件'''
+    def generate_file(
+        self, path_name: str, messages: list[Message], think: bool = False
+    ):
+        """生成文件"""
         path = self.book_output_dir / path_name
         if path.exists():
             print(f'{path_name} 已存在，跳过生成')
             return path.read_text(encoding='utf-8')
-        output_messages = [{
-            'role': 'user',
-            'content': f'请只用中文生成 {path_name} 的内容'
-        }]
+        output_messages = [
+            {'role': 'user', 'content': f'请只用中文生成 {path_name} 的内容'}
+        ]
         path.parent.mkdir(parents=True, exist_ok=True)
-        content = self.chat(messages+output_messages, path_name, think=think)
+        content = self.chat(messages + output_messages, path_name, think=think)
         path.write_text(content, encoding='utf-8')
         return content
 
     def generate_book_name(self):
-        '''根据用户要求生成书名'''
-        self.book_name = self.chat([
-            {'role': 'user', 'content': f'开题灵感：{self.user_input}\n\n提取或起个书名，仅回答一个，不携带书名号'}
-        ], '生成书名')
+        """根据用户要求生成书名"""
+        self.book_name = self.chat(
+            [
+                {
+                    'role': 'user',
+                    'content': f'开题灵感：{self.user_input}\n\n提取或起个书名，仅回答一个，不携带书名号',
+                }
+            ],
+            '生成书名',
+        )
 
     def setup_book_output_dir(self):
-        '''设置小说根目录'''
+        """设置小说根目录"""
         assert self.book_name
         self.book_output_dir = self.output_dir / self.book_name
         self.book_output_dir.mkdir(parents=True, exist_ok=True)
 
     def save_user_input(self, user_input: str | None = None):
-        '''保存用户输入'''
+        """保存用户输入"""
         user_input = user_input or self.user_input
         f = self.book_output_dir / '要求.md'
         if user_input is None:
@@ -179,41 +195,59 @@ class NovelGenerator:
             self.user_input = user_input
 
     def generate_settings(self):
-        '''生成设定集文件'''
-        self.generate_file('设定集.md', [
-            {'role': 'user', 'content': f'''\
+        """生成设定集文件"""
+        self.generate_file(
+            '设定集.md',
+            [
+                {
+                    'role': 'user',
+                    'content': f"""\
 《{self.book_name}》
 
 开题灵感：{self.user_input}
 
 写设定集，需要定义剧情大纲之外的所有方面，要有一定深度的各种人、事、物的名字和背景设定，立住人设，深化情感内核，用于生成大纲
-'''}
-        ])
+""",
+                }
+            ],
+        )
 
     def generate_outline(self):
-        '''生成总纲文件'''
+        """生成总纲文件"""
         settings_content = self.read_text('设定集.md')
 
-        self.generate_file('总纲.md', [
-            {'role': 'user', 'content': f'''\
+        self.generate_file(
+            '总纲.md',
+            [
+                {
+                    'role': 'user',
+                    'content': f"""\
 《{self.book_name}》
 
 开题灵感：{self.user_input}
 
 {settings_content}
-'''}
-        ])
+""",
+                }
+            ],
+        )
 
     def generate_part_names(self):
-        '''生成卷名列表'''
+        """生成卷名列表"""
         outline_content = self.read_text('总纲.md')
-        parts_str = self.generate_file('卷名.txt', [
-            u.Message(role='system', content='你是一个小说卷名生成器'),
-            u.Message(
-                role='user', content=f'{outline_content}\n\n提取或生成所有的卷名，不重复，每行一个，仅输出卷名，不包含第几卷'),
-        ], think=True)
+        parts_str = self.generate_file(
+            '卷名.txt',
+            [
+                u.Message(role='system', content='你是一个小说卷名生成器'),
+                u.Message(
+                    role='user',
+                    content=f'{outline_content}\n\n提取或生成所有的卷名，不重复，每行一个，仅输出卷名，不包含第几卷',
+                ),
+            ],
+            think=True,
+        )
         part_names = [
-            f"第{i}卷-{part_name}"
+            f'第{i}卷-{part_name}'
             for i, part_name in enumerate((n for n in parts_str.splitlines() if n), 1)
         ]
         return part_names
@@ -237,14 +271,18 @@ class NovelGenerator:
         return ''.join(contents)
 
     def generate_part_outline(self, part_name):
-        '''生成卷大纲文件'''
+        """生成卷大纲文件"""
         path_name = f'{part_name}/大纲.md'
         novel_part_outline = self.get_novel_part_outline()
         part_names = self.read_text('卷名.txt')
         settings_content = self.read_text('设定集.md')
         outline_content = self.read_text('总纲.md')
-        self.generate_file(path_name, [
-            {'role': 'user', 'content': f'''\
+        self.generate_file(
+            path_name,
+            [
+                {
+                    'role': 'user',
+                    'content': f"""\
 {novel_part_outline}
 
 {settings_content}
@@ -252,20 +290,30 @@ class NovelGenerator:
 {outline_content}
 
 {part_names}
-'''}
-        ])
+""",
+                }
+            ],
+        )
 
     def generate_chapter_names(self, part_name: str):
-        '''生成章节名列表'''
+        """生成章节名列表"""
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
-        chapters_str = self.generate_file(f'{part_name}/章名.txt', [
-            u.Message(role='system', content='你是一个小说章节名生成器'),
-            u.Message(
-                role='user', content=f'{part_outline_content}\n\n提取或生成所有的章节名，不重复，每行一个，仅输出章节名，不包含第几章'),
-        ], think=True)
+        chapters_str = self.generate_file(
+            f'{part_name}/章名.txt',
+            [
+                u.Message(role='system', content='你是一个小说章节名生成器'),
+                u.Message(
+                    role='user',
+                    content=f'{part_outline_content}\n\n提取或生成所有的章节名，不重复，每行一个，仅输出章节名，不包含第几章',
+                ),
+            ],
+            think=True,
+        )
         chapter_names = [
-            f"第{i}章-{chapter_name}"
-            for i, chapter_name in enumerate((n for n in chapters_str.splitlines() if n), 1)
+            f'第{i}章-{chapter_name}'
+            for i, chapter_name in enumerate(
+                (n for n in chapters_str.splitlines() if n), 1
+            )
         ]
         return chapter_names
 
@@ -291,7 +339,7 @@ class NovelGenerator:
         return ''.join(contents)
 
     def generate_chapter_outline(self, part_name: str, chapter_name: str):
-        '''生成章节大纲文件'''
+        """生成章节大纲文件"""
         path_name = f'{part_name}/{chapter_name}/大纲.md'
         if self.exists(path_name):
             return
@@ -299,8 +347,12 @@ class NovelGenerator:
         settings_content = self.read_text('设定集.md')
         part_outline_content = self.read_text(f'{part_name}/大纲.md')
         chapter_names = self.read_text(f'{part_name}/章名.txt')
-        self.generate_file(path_name, [
-            {'role': 'user', 'content': f'''
+        self.generate_file(
+            path_name,
+            [
+                {
+                    'role': 'user',
+                    'content': f"""
 {novel_chapter_outline}
 
 {settings_content}
@@ -308,8 +360,10 @@ class NovelGenerator:
 {part_outline_content}
 
 {chapter_names}
-'''}
-        ])
+""",
+                }
+            ],
+        )
 
     def get_novel_text(self) -> str:
         contents: list[str] = []
@@ -333,21 +387,28 @@ class NovelGenerator:
         return ''.join(contents)
 
     def generate_chapter_content(self, part_name: str, chapter_name: str):
-        '''生成章节正文文件'''
+        """生成章节正文文件"""
         path_name = f'{part_name}/{chapter_name}/正文.md'
         if not self.exists(path_name):
             novel_text = self.get_novel_text()
             settings_content = self.read_text('设定集.md')
             chapter_outline_content = self.read_text(
-                f'{part_name}/{chapter_name}/大纲.md')
-            self.generate_file(path_name, [
-                {'role': 'user', 'content': f'''\
+                f'{part_name}/{chapter_name}/大纲.md'
+            )
+            self.generate_file(
+                path_name,
+                [
+                    {
+                        'role': 'user',
+                        'content': f"""\
 {novel_text}
 
 {settings_content}
 
-{chapter_outline_content}'''}
-            ])
+{chapter_outline_content}""",
+                    }
+                ],
+            )
         content = self.get_true_text(path_name)
         cleaned_path = self.book_output_dir / path_name.replace('.md', '.txt')
         only_chapter_name = chapter_name.split('-', 1)[1]
@@ -356,14 +417,22 @@ class NovelGenerator:
             if cleaned_path.exists():
                 cleaned_content = cleaned_path.read_text(encoding='utf-8')
             else:
-                cleaned_content = self.chat([
-                    {'role': 'system',
-                        'content': '你是一个小说正文洗稿器，开头不应该出现第几章第几卷，结尾不应该明说本章完，内容不应该出现无意义的重复，总之这类影响读者阅读体验的与正文无关的内容，要删或改，其余必须保持原样'},
-                    {'role': 'user', 'content': content}
-                ], f'洗稿 {path_name}')
+                cleaned_content = self.chat(
+                    [
+                        {
+                            'role': 'system',
+                            'content': '你是一个小说正文洗稿器，开头不应该出现第几章第几卷，结尾不应该明说本章完，内容不应该出现无意义的重复，总之这类影响读者阅读体验的与正文无关的内容，要删或改，其余必须保持原样',
+                        },
+                        {'role': 'user', 'content': content},
+                    ],
+                    f'洗稿 {path_name}',
+                )
                 cleaned_content = u.markdown_to_text(cleaned_content)
                 cleaned_path.write_text(cleaned_content, encoding='utf-8')
-            if only_chapter_name in cleaned_content and only_part_name in cleaned_content:
+            if (
+                only_chapter_name in cleaned_content
+                and only_part_name in cleaned_content
+            ):
                 cleaned_path.unlink()
                 continue
             break
@@ -375,12 +444,18 @@ class NovelGenerator:
             diff_path.write_text(diff_text, encoding='utf-8')
 
     def run(self):
-        '''运行小说生成流程'''
+        """运行小说生成流程"""
         # 1. 获取用户输入
         if self.user_input is None and self.book_name is None:
-            self.user_input = self.chat([
-                {'role': 'user', 'content': '仅生成一个小说的开题灵感，包含一个书名和一个介绍，不包含无关内容'}
-            ], title='生成开题灵感')
+            self.user_input = self.chat(
+                [
+                    {
+                        'role': 'user',
+                        'content': '仅生成一个小说的开题灵感，包含一个书名和一个介绍，不包含无关内容',
+                    }
+                ],
+                title='生成开题灵感',
+            )
 
         # 2. 生成书名并设置根目录
         if self.book_name is None:
@@ -413,12 +488,14 @@ class NovelGenerator:
 if __name__ == '__main__':
     # 解析命令行参数
     parser = argparse.ArgumentParser(description='小说生成器')
-    parser.add_argument('--model', '-m', type=str,
-                        default='qwen3.5:4b', help='模型名称')
+    parser.add_argument(
+        '--model', '-m', type=str, default='qwen3.5:4b', help='模型名称'
+    )
     parser.add_argument('--book-name', '-n', type=str, help='小说书名')
     parser.add_argument('--user-input', '-i', type=str, help='小说生成要求')
-    parser.add_argument('--output-dir', '-o', type=str,
-                        default='./dist/', help='输出目录路径')
+    parser.add_argument(
+        '--output-dir', '-o', type=str, default='./dist/', help='输出目录路径'
+    )
     args = parser.parse_args()
 
     # 初始化生成器

@@ -32,4 +32,11 @@ requires = ["hatchling"]
 [dependency-groups]
 dev = [
   "ipython>=9.11.0",
+  "ruff>=0.15.12",
 ]
+
+[tool.ruff]
+preview = true
+
+[tool.ruff.format]
+quote-style = "single"
