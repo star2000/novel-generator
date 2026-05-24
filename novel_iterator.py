@@ -18,7 +18,6 @@ class NovelIterator:
 
         self.outline = ''
         self.settings = ''
-        self.chapters = []
         self.chapter_outlines = []
 
         self.outline = self.chat(
@@ -61,9 +60,6 @@ class NovelIterator:
 """
 
         self.settings = self.chat(prompt, '补充设定集')
-        (self.working_dir / f'第{chapter_num}章' / '设定集.md').write_text(
-            self.settings, encoding='utf-8'
-        )
 
     def is_end(self, content: str) -> bool:
         result = self.chat(f"""\
@@ -92,10 +88,6 @@ class NovelIterator:
 """
 
         content = self.chat(prompt, f'第 {chapter_num} 章')
-        self.chapters.append(content)
-        (self.working_dir / f'第{chapter_num}章' / '正文.md').write_text(
-            content, encoding='utf-8'
-        )
         return content
 
     def write_chapter_outline(self, chapter_num: int, content: str):
@@ -114,19 +106,22 @@ class NovelIterator:
 
         chapter_outline = self.chat(prompt, f'总结第{chapter_num}章正文')
         self.chapter_outlines.append(chapter_outline)
-        (self.working_dir / f'第{chapter_num}章' / '总结.md').write_text(
-            chapter_outline, encoding='utf-8'
-        )
+        return chapter_outline
 
     def run(self):
         """运行小说迭代器"""
         chapter_num = 1
         while True:
+            chapter_dir = self.working_dir / f'第{chapter_num}章'
+            chapter_dir.mkdir(parents=True, exist_ok=True)
             content = self.write_chapter(chapter_num)
+            (chapter_dir / '正文.md').write_text(content, encoding='utf-8')
             if self.is_end(content):
                 break
             self.update_settings(chapter_num, content)
-            self.write_chapter_outline(content)
+            (chapter_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
+            chapter_outline = self.write_chapter_outline(content)
+            (chapter_dir / '总结.md').write_text(chapter_outline, encoding='utf-8')
             chapter_num += 1
 
 
