@@ -51,7 +51,7 @@ class NovelIterator:
         self.working_dir.mkdir(parents=True, exist_ok=True)
         (self.working_dir / '大纲.md').write_text(self.outline, encoding='utf-8')
 
-    def update_settings(self, chapter_num: int, content: str):
+    def update_settings(self, content: str):
         """补充设定集"""
         prompt = f"""\
 <最新章节>
@@ -127,7 +127,7 @@ class NovelIterator:
             (chapter_dir / '正文.md').write_text(content, encoding='utf-8')
             if self.is_end(content):
                 break
-            self.update_settings(chapter_num, content)
+            self.update_settings(content)
             (chapter_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
             chapter_outline = self.write_chapter_outline(chapter_num, content)
             (chapter_dir / '总结.md').write_text(chapter_outline, encoding='utf-8')
