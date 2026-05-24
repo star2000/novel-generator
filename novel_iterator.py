@@ -14,15 +14,16 @@ class NovelIterator:
         if not user_input:
             user_input = input('要求：')
 
-        self.chat = u.Chat(model, '你是一位充满幽默感和正能量的网文作者')
+        self.chat = u.Chat(model, '你是一位幽默风趣的网文作者')
 
         self.outline = ''
         self.settings = ''
         self.chapters = []
+        self.chapter_outlines = []
 
         self.outline = self.chat(
             f"""\
-生成一篇足够有趣的小说大纲，包含以下要素：
+生成一篇有趣的小说大纲，包含以下要素：
 1. 多个关键转折点
 2. 人物核心欲望
 3. 故事结局
@@ -45,8 +46,8 @@ class NovelIterator:
         self.working_dir.mkdir(parents=True, exist_ok=True)
         (self.working_dir / '大纲.md').write_text(self.outline, encoding='utf-8')
 
-    def update_settings(self, content: str):
-        """更新设定集"""
+    def update_settings(self, chapter_num: int, content: str):
+        """补充设定集"""
         prompt = f"""\
 <最新章节>
 {content}
@@ -59,12 +60,23 @@ class NovelIterator:
 请根据最新章节的内容补充当前设定集，并输出完整的设定集：
 """
 
-        self.settings = self.chat(prompt, '更新设定集')
-        (self.working_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
+        self.settings = self.chat(prompt, '补充设定集')
+        (self.working_dir / f'第{chapter_num}章' / '设定集.md').write_text(
+            self.settings, encoding='utf-8'
+        )
 
-    def write_chapter(self) -> str:
-        """写一章正文，结尾要有钩子"""
-        chapter_num = len(self.chapters) + 1
+    def is_end(self, content: str) -> bool:
+        result = self.chat(f"""\
+<最新章节>
+{content}
+</最新章节>
+
+本章是否是全书的最后一章（比如出现了“全书完”之类的词句）？[是/否]：
+""")
+        return '是' in result
+
+    def write_chapter(self, chapter_num: int) -> str:
+        """创作正文"""
         prompt = f"""\
 <大纲>
 {self.outline}
@@ -74,22 +86,48 @@ class NovelIterator:
 {self.settings}
 </设定集>
 
-{'\n\n'.join(f'第 {i} 章\n{c}' for i, c in enumerate(self.chapters, 1) if i > chapter_num - 5)}
+{'\n\n'.join(f'<第{i}章总结>\n{c}\n</第{i}章总结>' for i, c in enumerate(self.chapter_outlines, 1))}
 
 请创作第 {chapter_num} 章的正文：
 """
 
         content = self.chat(prompt, f'第 {chapter_num} 章')
         self.chapters.append(content)
-        (self.working_dir / f'第{chapter_num}章.md').write_text(
+        (self.working_dir / f'第{chapter_num}章' / '正文.md').write_text(
             content, encoding='utf-8'
         )
-        self.update_settings(content)
+        return content
+
+    def write_chapter_outline(self, chapter_num: int, content: str):
+        """总结正文"""
+        prompt = f"""\
+<设定集>
+{self.settings}
+</设定集>
+
+<第{chapter_num}章>
+{content}
+</第{chapter_num}章>
+
+请对第{chapter_num}章中的内容进行总结并输出：
+"""
+
+        chapter_outline = self.chat(prompt, f'总结第{chapter_num}章正文')
+        self.chapter_outlines.append(chapter_outline)
+        (self.working_dir / f'第{chapter_num}章' / '总结.md').write_text(
+            chapter_outline, encoding='utf-8'
+        )
 
     def run(self):
         """运行小说迭代器"""
+        chapter_num = 1
         while True:
-            self.write_chapter()
+            content = self.write_chapter(chapter_num)
+            if self.is_end(content):
+                break
+            self.update_settings(chapter_num, content)
+            self.write_chapter_outline(content)
+            chapter_num += 1
 
 
 if __name__ == '__main__':
