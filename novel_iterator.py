@@ -1,7 +1,13 @@
 import argparse
 from pathlib import Path
 
+from pydantic import BaseModel
+
 import utils as u
+
+
+class BoolCheck(BaseModel):
+    result: bool
 
 
 class NovelIterator:
@@ -62,14 +68,17 @@ class NovelIterator:
         self.settings = self.chat(prompt, '补充设定集')
 
     def is_end(self, content: str) -> bool:
-        result = self.chat(f"""\
+        result = self.chat(
+            f"""\
 <最新章节>
 {content}
 </最新章节>
 
 本章是否是全书的最后一章（比如出现了“全书完”之类的词句）？[是/否]：
-""")
-        return '是' in result
+""",
+            format=BoolCheck.model_json_schema(),
+        )
+        return BoolCheck.model_validate_json(result).result
 
     def write_chapter(self, chapter_num: int) -> str:
         """创作正文"""
@@ -120,7 +129,7 @@ class NovelIterator:
                 break
             self.update_settings(chapter_num, content)
             (chapter_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
-            chapter_outline = self.write_chapter_outline(content)
+            chapter_outline = self.write_chapter_outline(chapter_num, content)
             (chapter_dir / '总结.md').write_text(chapter_outline, encoding='utf-8')
             chapter_num += 1
 
