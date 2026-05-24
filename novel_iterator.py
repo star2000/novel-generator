@@ -14,7 +14,7 @@ class NovelIterator:
         if not user_input:
             user_input = input('要求：')
 
-        self.chat = u.Chat(model)
+        self.chat = u.Chat(model, '你是一位充满幽默感和正能量的网文作者')
 
         self.outline = ''
         self.settings = ''
@@ -22,29 +22,24 @@ class NovelIterator:
 
         self.outline = self.chat(
             f"""\
-生成一篇爽文小说的最小可行性大纲，包含以下要素：
+生成一篇足够有趣的小说大纲，包含以下要素：
 1. 多个关键转折点
 2. 人物核心欲望
 3. 故事结局
 
-要求：
-- 大纲简洁，便于后续创作
-- 转折点要有戏剧性
-- 人物欲望要清晰
-- 结局要有吸引力
-
 {user_input}
 """,
-            '生成最小可行性大纲',
+            '生成大纲',
         )
         self.book_name = self.chat(
             f"""\
-大纲：
+<大纲>
 {self.outline}
+</大纲>
 
-提取大纲中的书名，不包括书名号
+提取大纲中的书名，不包括书名号：
 """,
-            '生成小说书名',
+            '提取大纲中的书名',
         )
         self.working_dir = Path(output_dir) / self.book_name
         self.working_dir.mkdir(parents=True, exist_ok=True)
@@ -53,56 +48,43 @@ class NovelIterator:
     def update_settings(self, content: str):
         """更新设定集"""
         prompt = f"""\
-```txt
+<最新章节>
 {content}
-```
+</最新章节>
 
-当前设定集：
+<当前设定集>
 {self.settings}
+</当前设定集>
 
-请根据以上内容，补充设定集
-
-设定集应只关注底层设定，不包含任何多余内容，字数要非常少，文字简练
-在当前设定集后追加内容：
+请根据最新章节的内容补充当前设定集，并输出完整的设定集：
 """
 
-        update = self.chat(prompt, '更新设定集')
-        self.settings += update
-        (self.working_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
-
-    def compress_settings(self):
-        """压缩设定集，去除冗余内容，保持核心信息不变"""
-        prompt = f"""\
-当前设定集：
-{self.settings}
-请压缩设定集，去除冗余内容，保持设定集核心信息不变
-"""
-        self.settings = self.chat(prompt, '压缩设定集')
+        self.settings = self.chat(prompt, '更新设定集')
         (self.working_dir / '设定集.md').write_text(self.settings, encoding='utf-8')
 
     def write_chapter(self) -> str:
         """写一章正文，结尾要有钩子"""
         chapter_num = len(self.chapters) + 1
         prompt = f"""\
-大纲：
+<大纲>
 {self.outline}
+</大纲>
 
-设定集：
+<设定集>
 {self.settings}
+</设定集>
 
 {'\n\n'.join(f'第 {i} 章\n{c}' for i, c in enumerate(self.chapters, 1) if i > chapter_num - 5)}
 
-输出第 {chapter_num} 章的正文，结尾要自然地留下悬念的钩子作为下一章的开头
+请创作第 {chapter_num} 章的正文：
 """
 
-        content = self.chat(prompt, f'写第 {chapter_num} 章')
+        content = self.chat(prompt, f'第 {chapter_num} 章')
         self.chapters.append(content)
         (self.working_dir / f'第{chapter_num}章.md').write_text(
             content, encoding='utf-8'
         )
         self.update_settings(content)
-        if chapter_num % 5 == 0:
-            self.compress_settings()
 
     def run(self):
         """运行小说迭代器"""
