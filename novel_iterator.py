@@ -24,6 +24,7 @@ class NovelIterator:
 
         self.outline = ''
         self.settings = ''
+        self.chapter = []
         self.chapter_outlines = []
 
         self.outline = self.chat(
@@ -43,7 +44,7 @@ class NovelIterator:
 {self.outline}
 </大纲>
 
-提取大纲中的书名，不包括书名号：
+提取大纲中的书名，要求可用于文件夹名，不包括书名号：
 """,
             '提取大纲中的书名',
         )
@@ -76,6 +77,7 @@ class NovelIterator:
 
 本章是否是全书的最后一章（比如出现了“全书完”之类的词句）？[是/否]：
 """,
+            '判断是否已完结',
             format=BoolCheck.model_json_schema(),
         )
         return BoolCheck.model_validate_json(result).result
@@ -93,10 +95,13 @@ class NovelIterator:
 
 {'\n\n'.join(f'<第{i}章总结>\n{c}\n</第{i}章总结>' for i, c in enumerate(self.chapter_outlines, 1))}
 
-请创作第 {chapter_num} 章的正文：
+{f'<上一章正文>\n{self.chapter[-1]}\n</上一章正文>' if self.chapter else ''}
+
+请创作第 {chapter_num} 章的正文，模拟当代年轻人的写作风格：
 """
 
         content = self.chat(prompt, f'第 {chapter_num} 章')
+        self.chapter.append(content)
         return content
 
     def write_chapter_outline(self, chapter_num: int, content: str):
@@ -110,7 +115,7 @@ class NovelIterator:
 {content}
 </第{chapter_num}章>
 
-请对第{chapter_num}章中的内容进行总结并输出：
+请对第{chapter_num}章中的内容进行一句话总结并输出：
 """
 
         chapter_outline = self.chat(prompt, f'总结第{chapter_num}章正文')
