@@ -1,6 +1,6 @@
 # 高质量长篇小说生成器
 
-一个基于AI的小说自动生成工具，能够根据用户输入的要求，生成完整的小说内容，包括设定集、总纲、卷大纲、章节大纲和章节正文。
+一个基于 AI 的小说自动生成工具，能够根据用户输入的要求，生成完整的小说内容，包括设定集、总纲、卷大纲、章节大纲和章节正文。
 
 ## 功能特点
 
@@ -12,7 +12,7 @@
 
 ## 环境安装步骤
 
-1. [安装uv包管理器](https://docs.astral.sh/uv/getting-started/installation/) 和 [Ollama 本地ai启动器](https://ollama.com/download)
+1. [安装 uv 包管理器](https://docs.astral.sh/uv/getting-started/installation/) 和 [Ollama 本地 ai 启动器](https://ollama.com/download)
 2. 克隆项目到本地：
    ```sh
    git clone https://github.com/star2000/novel-generator.git
@@ -33,56 +33,71 @@
 **novel_generator.py**：
 
 - 核心的小说生成逻辑
-- 实现了从用户输入到完整小说的生成流程
+- **自上而下生成方式**：根据用户输入，逐层生成小说总纲→设定集→卷大纲→章节大纲→章节正文
 - 包括书名生成、总纲生成、设定集生成、卷和章节的生成
 
-**参数说明：**
+**参数说明**：
 
-- `--model, -m`：模型名称，默认为"qw"
+- `--model, -m`：模型名称，默认为 "qwen3.5:4b"
 - `--user-input, -i`：小说生成要求，描述你想要的小说类型、风格、主题等
 - `--book-name, -n`：小说书名，如不提供则自动生成
-- `--output-dir, -o`：输出目录路径，默认为"./dist/"
+- `--output-dir, -o`：输出目录路径，默认为 "./dist/"
 
-**示例：**
+**示例**：
 
 ```sh
-# 无参数，随机生成开题灵感
+# 无参数，随机生成一本完整小说
 uv run novel_generator.py
 
 # 仅输入要求
-uv run novel_generator.py --user-input "一部关于未来世界的科幻小说，主角是一名人工智能科学家"
+uv run novel_generator.py \
+    --model "qwen3.5:4b" \
+    --user-input "一部关于未来世界的科幻小说，主角是一名人工智能科学家"
 
-# 仅书名，用于中断后继续生成
-uv run novel_generator.py --book-name "剑影江湖"
+# 指定书名
+uv run novel_generator.py \
+    --book-name "剑影江湖" \
+    --model "qwen3.5:4b"
 
 # 全参数自定义
-uv run novel_generator.py --model "qw" --user-input "一部关于未来世界的科幻小说，主角是一名人工智能科学家" --book-name "剑影江湖" --output-dir "./dist/"
+uv run novel_generator.py \
+    --model "qwen3.5:4b" \
+    --user-input "一部关于未来世界的科幻小说，主角是一名人工智能科学家" \
+    --book-name "剑影江湖" \
+    --output-dir "./dist/"
 ```
 
-### 评价小说
+### 迭代小说
 
-**novel_review.py**：
+**novel_iterator.py**：
 
-- 实现小说评价功能
-- 分析小说内容并生成评价
+- **自下而上生成方式**：从单章正文开始，逐步积累内容
+- 每次生成一章后，会根据该章内容更新设定集，并总结本章内容
+- 适合快速试验和探索创意，支持持续迭代生成
 
-**参数说明：**
+**参数说明**：
 
-- `--model, -m`：模型名称，默认为"qw"
-- `--book-name, -n`：小说书名，如不提供则评价输出目录下所有小说
-- `--output-dir, -o`：输出目录路径，默认为"./dist/"
+- `--model, -m`：模型名称，默认为 "qwen3.5:4b"
+- `--user-input, -i`：小说大纲/正文生成要求
+- `--output-dir, -o`：输出目录路径，默认为 "./dist/"
 
-**示例：**
+**示例**：
 
 ```sh
-# 无参数，评价已生成的所有小说
-uv run novel_review.py
+# 无参数，生成一部有趣的穿越小说
+uv run novel_iterator.py --user-input "一部关于穿越修仙的古代玄幻小说"
 
-# 仅指定小说书名，评价该小说
-uv run novel_review.py --book-name "剑影江湖"
+# 指定书名继续生成
+uv run novel_iterator.py \
+    --book-name "剑影江湖" \
+    --user-input "一部关于穿越修仙的古代玄幻小说"
 
 # 全参数自定义
-uv run novel_review.py --model "qw" --book-name "剑影江湖" --output-dir "./dist/"
+uv run novel_iterator.py \
+    --model "qwen3.5:4b" \
+    --user-input "一部关于穿越修仙的古代玄幻小说" \
+    --book-name "剑影江湖" \
+    --output-dir "./dist/"
 ```
 
 ## 工作流程
